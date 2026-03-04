@@ -71,6 +71,14 @@ Locate implementation files in the project. Check these common locations:
 - `*.ts`, `*.js` - TypeScript/JavaScript sources
 - `*.go`, `*.rs` - Go/Rust sources
 
+**AI Agent files to prioritize (when agent patterns detected):**
+- `graph.py`, `graph.ts` - Agent workflow definitions
+- `tools.py`, `tools.ts`, `tools/*.py`, `tools/*.ts` - Tool implementations
+- `state.py`, `state.ts` - State schemas
+- `prompts.py`, `prompts/*.md`, `system.md` - Prompt templates
+- `agent.py`, `agent.ts` - Main agent logic
+- `langgraph.json`, `crew.yaml` - Framework configurations
+
 Use `list_files` or equivalent to discover the actual structure, then read relevant files.
 
 ### Step 3: Verify Code Against Rules
@@ -120,10 +128,129 @@ Analyze code against all available rules:
    - Prompt injection considerations
    - Rate limiting awareness
 
+   **Agent Observability Patterns (NEW):**
+
+   5. **Loop Safety**
+      - All `while True` patterns must have explicit break conditions
+      - Retry decorators must specify max attempts
+      - Agent loops must have iteration counters
+      - Recursive functions must have termination conditions
+
+      | Pattern | Language | Detection | Severity |
+      |---------|----------|-----------|----------|
+      | `while True:` without `break` in scope | Python | Regex + scope analysis | ⚠️ Warning |
+      | `for { }` without break/return | Go | Regex | ⚠️ Warning |
+      | `while (true)` without break | TS/JS | Regex | ⚠️ Warning |
+      | Recursive call without termination check | All | Call graph analysis | ⚠️ Warning |
+      | `@retry` without `max_retries` or `stop` | Python | Decorator inspection | ❌ Issue |
+      | `retryable()` without limit config | TS/JS | Function call inspection | ❌ Issue |
+
+   6. **Retry Limit Enforcement**
+      - Retry decorators must specify max attempts
+      - Backoff strategies must have maximum delay caps
+
+      | Library/Pattern | Required Parameter | Language |
+      |-----------------|-------------------|----------|
+      | `@retry` (tenacity) | `stop=stop_after_attempt(n)` | Python |
+      | `@backoff.on_exception` | `max_tries=n` | Python |
+      | `retry` (async-retry) | `retries: n` | Node.js |
+      | `p-retry` | `retries: n` | Node.js |
+      | Custom `while` retry | Counter with max check | All |
+
+   7. **Tool Registry Consistency**
+      - All tool references must exist in tool definitions
+      - Tool names in prompts must match registered tools
+      - No undefined tool calls in agent code
+
+      *Detection approach:*
+      1. Build tool inventory from definitions (`@tool`, `@function_tool`, schema `name:`)
+      2. Find tool references in code and prompts
+      3. Flag any reference not in the inventory
+
+   8. **Context Size Awareness**
+      - System prompts should not exceed recommended limits
+      - Large file inclusions should be flagged
+
+      | Content Type | Warning Threshold | Issue Threshold |
+      |--------------|-------------------|-----------------|
+      | System prompt | > 4,000 tokens (~16KB) | > 8,000 tokens (~32KB) |
+      | Single tool description | > 500 tokens (~2KB) | > 1,000 tokens (~4KB) |
+      | Total tool descriptions | > 2,000 tokens (~8KB) | > 4,000 tokens (~16KB) |
+
+      *Token estimation:* Use heuristic of ~4 characters per token for English text.
+
+   9. **Explicit Tool Listing**
+      - System prompts should list available tools
+      - Tool capabilities should be clearly described
+      - Agents should know their boundaries
+
+      *Detection:* Check for tool listing sections (headers like "Available Tools", "You have access to")
+
 For each check, determine:
 - ✅ **Pass** - Code complies with the rule
 - ⚠️ **Warning** - Potential concern worth reviewing
 - ❌ **Issue** - Clear violation that needs fixing
+
+### Step 3b: Agent Pattern Analysis (if AI agent detected)
+
+If the project appears to be an AI agent (LangGraph, CrewAI, AutoGen, LangChain, or custom), perform additional analysis:
+
+**Framework Detection:**
+- `langgraph` in imports → LangGraph agent
+- `crewai` in imports → CrewAI agent
+- `autogen` in imports → AutoGen agent
+- `langchain` in imports → LangChain agent
+- Custom patterns → Custom agent framework
+
+**Analysis Steps:**
+
+1. **Build tool registry**
+   - Scan tool definition files (`tools.py`, `tools.ts`, `tools/*.py`)
+   - Extract tool names from decorators (`@tool`, `@function_tool`)
+   - Extract from schema definitions (`name: "tool_name"`)
+   - Note tool count and complexity
+
+2. **Analyze agent loops**
+   - Find main execution loops
+   - Check for termination conditions (break, return, max iterations)
+   - Verify retry limits on all retry mechanisms
+
+3. **Analyze prompts**
+   - Measure prompt sizes (estimate tokens)
+   - Check for tool listings in system prompts
+   - Verify tool references against registry
+
+4. **Cross-reference**
+   - Tools in prompts vs registry (flag mismatches)
+   - State fields vs usage
+   - Config vs implementation
+
+**Example findings:**
+
+```markdown
+### ⚠️ Warnings
+- Potential infinite loop: `agent/loop.py:45`
+  - **Pattern:** `while True:` without visible break condition
+  - **Suggestion:** Add explicit max iteration counter: `for i in range(MAX_ITERATIONS):`
+
+- Large system prompt: `prompts/system.md`
+  - **Size:** ~6,200 tokens (estimated)
+  - **Threshold:** 4,000 tokens (warning)
+  - **Risk:** May cause context overflow with long conversations
+  - **Suggestion:** Consider splitting into base prompt + dynamic sections
+
+### ❌ Issues
+- Missing retry limit: `tools/api_client.py:23`
+  - **Pattern:** `@retry` decorator without `stop` parameter
+  - **Rule:** All retry mechanisms must have explicit bounds
+  - **Fix:** Add `@retry(stop=stop_after_attempt(3))` or use `tenacity.stop_after_attempt(3)`
+
+- Hallucinated tool reference: `prompts/system.md:34`
+  - **Reference:** `execute_sql_query`
+  - **Available tools:** search_docs, write_file, run_tests
+  - **Rule:** Tool references must match registered tools
+  - **Fix:** Either add tool definition or remove reference from prompt
+```
 
 ### Step 4: Generate Report
 
