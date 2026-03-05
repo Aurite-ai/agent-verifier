@@ -98,10 +98,18 @@ When running verification on all fixtures, expect a report like:
 **Date:** 2026-03-04
 **Mode:** Standalone
 **Files analyzed:** 10
+**Agent type detected:** Custom
 
 ## Summary
 
-✅ 4 checks passed | ⚠️ 3 warnings | ❌ 4 issues
+✅ 4 checks passed | ⚠️ 3 warnings | ❌ 5 issues
+
+### By Category
+| Category | Pass | Warn | Issue |
+|----------|------|------|-------|
+| Code Quality | 2 | 0 | 0 |
+| Security | 0 | 0 | 0 |
+| Agent Patterns | 2 | 3 | 5 |
 
 ## Agent Pattern Analysis
 
@@ -126,12 +134,32 @@ When running verification on all fixtures, expect a report like:
 - [x] `small_prompt.md` - 78 tokens (under threshold)
 - [x] `large_prompt.md` - ~3,212 tokens (under 4K threshold)
 
+## Findings
+
+### ✅ Passing
+- Loop termination: `while_true_with_break.py` has explicit break conditions
+- Retry limits: `retry_with_limit.py` all decorators have stop parameters
+
+### ⚠️ Warnings
+- Potential infinite loop: `while_true_no_break.py:16, 26`
+- Recursive without depth: `recursive_no_base.py:28, 45, 62`
+
+### ❌ Issues
+- Missing retry limit: `retry_no_limit.py:16, 30, 45`
+- Missing max_tries: `backoff_no_limit.py:13, 27, 45`
+- Hallucinated tool: `execute_sql` in `prompt.md`
+
 ## Recommendations
 
 1. **Add break conditions** to while loops in `while_true_no_break.py`
 2. **Add stop parameter** to retry decorators: `stop=stop_after_attempt(3)`
-3. **Remove or implement** the `execute_sql` tool reference
-4. **Add depth limits** to recursive functions
+3. **Add depth limits** to recursive functions
+
+## Agent-Specific Recommendations
+
+1. **Loop Safety:** Add explicit `MAX_ITERATIONS` constants and break conditions
+2. **Tool Registry:** Remove `execute_sql` reference or implement the tool
+3. **Context Management:** All prompts within recommended limits ✓
 ```
 
 ---

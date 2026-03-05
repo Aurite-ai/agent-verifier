@@ -254,7 +254,7 @@ If the project appears to be an AI agent (LangGraph, CrewAI, AutoGen, LangChain,
 
 ### Step 4: Generate Report
 
-Output a structured verification report:
+Output a structured verification report with agent-specific sections when applicable:
 
 ```markdown
 # Verification Report
@@ -262,11 +262,38 @@ Output a structured verification report:
 **Project:** [project name or path]
 **Date:** [current date]
 **Mode:** [Kahuna-enhanced | Standalone]
-**Files analyzed:** [list of files]
+**Files analyzed:** [count]
+**Agent type detected:** [LangGraph | CrewAI | AutoGen | LangChain | Custom | None]
 
 ## Summary
 
 ✅ X checks passed | ⚠️ Y warnings | ❌ Z issues
+
+### By Category
+| Category | Pass | Warn | Issue |
+|----------|------|------|-------|
+| Code Quality | X | X | X |
+| Security | X | X | X |
+| Agent Patterns | X | X | X |
+
+## Agent Pattern Analysis
+
+*(Include this section only when Agent type detected ≠ None)*
+
+### Loop Safety
+- [x] All retry mechanisms have explicit limits
+- [ ] ⚠️ Potential unbounded loop at `[file:line]`
+- [ ] ❌ Missing retry limit at `[file:line]`
+
+### Tool Consistency
+- [x] Tool registry found: X tools defined
+- [ ] ❌ Y hallucinated tool references in prompts
+- [ ] ⚠️ Z tools not documented in system prompt
+
+### Context Management
+- [x] System prompt within limits (~X tokens)
+- [ ] ⚠️ System prompt exceeds recommended size (~X tokens)
+- [x] Tool descriptions within limits
 
 ## Findings
 
@@ -286,8 +313,18 @@ Output a structured verification report:
 
 ## Recommendations
 
+*(Generic recommendations for all projects)*
+
 1. [Priority recommendation based on findings]
 2. [Additional improvements]
+
+## Agent-Specific Recommendations
+
+*(Include this section only when Agent type detected ≠ None)*
+
+1. **Loop Safety:** [Add iteration limits / Add retry bounds]
+2. **Tool Registry:** [Remove or define hallucinated tools]
+3. **Context Management:** [Split large prompts / Add tool documentation]
 ```
 
 ### Step 5: Export Report (Optional)
@@ -296,10 +333,24 @@ After presenting the report, ask the user:
 
 > Would you like to save this verification report to a file?
 
-If confirmed, save to:
-```
-reports/verification/YYYY-MM-DD_HH-MM-SS.md
-```
+If confirmed:
+
+1. Create the reports directory if it doesn't exist:
+   ```bash
+   mkdir -p reports/verification
+   ```
+
+2. Generate filename with **actual current timestamp** (not zeros):
+   ```
+   reports/verification/YYYY-MM-DD_HH-MM-SS.md
+   ```
+   
+   **Example:** `reports/verification/2026-03-04_16-48-21.md`
+   
+   Use the current time from the system, not placeholder values.
+   The format is: `{year}-{month}-{day}_{hour}-{minute}-{second}.md`
+
+3. Save the complete report to that file.
 
 ## Notes
 

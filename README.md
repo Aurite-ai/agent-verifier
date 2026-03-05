@@ -67,6 +67,77 @@ cp -r skills/verification ~/.claude/skills/
 # For other agents, check their documentation for the skills directory location
 ```
 
+## Updating Installed Skills
+
+### From NPM Registry
+
+Re-run the install command to get the latest published version:
+
+```bash
+# Update to latest version
+npx skills add aurite-ai/agent-verifier -a claude-code
+
+# Or specify a version
+npx skills add aurite-ai/agent-verifier@1.2.0 -a claude-code
+```
+
+### From GitHub Repository
+
+Re-run with the same source to pull latest changes:
+
+```bash
+# Update from default branch
+npx skills add github:aurite-ai/agent-verifier -a claude-code
+
+# Update from specific branch
+npx skills add github:aurite-ai/agent-verifier#main -a claude-code
+
+# Update to specific tag/release
+npx skills add github:aurite-ai/agent-verifier#v1.2.0 -a claude-code
+```
+
+### From Local Source (Symlink)
+
+If installed with symlink, changes reflect automatically. No action needed.
+
+Check if you're using symlink:
+```bash
+# Check the skills-lock.json in your project
+cat skills-lock.json  # Look for "method": "symlink"
+
+# Or check the installed skill directly
+ls -la .agents/skills/verification  # Should show -> pointing to source
+```
+
+### From Local Source (Copy)
+
+Re-run the install command to update:
+
+```bash
+# Reinstall from source
+npx skills add /path/to/agent-verifier -a claude-code
+
+# Or force reinstall
+npx skills add /path/to/agent-verifier -a claude-code --force
+```
+
+### Remove and Reinstall
+
+```bash
+# Remove the skill
+npx skills remove verification
+
+# Reinstall from any source
+npx skills add aurite-ai/agent-verifier -a claude-code
+```
+
+### Manual Update
+
+```bash
+# Copy updated files directly
+cp -r /path/to/agent-verifier/skills/verification ~/.claude/skills/
+```
+
 ## Usage
 
 Once installed, trigger the skill by asking your coding agent to:
