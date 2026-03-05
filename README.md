@@ -162,36 +162,94 @@ Once installed, trigger the skill by asking your coding agent to:
 - Uses `kahuna_ask` for deeper context queries
 - Applies framework patterns surfaced by `kahuna_prepare_context`
 
-### Built-in Checks
+### Verification Checks
 
-**General Code Quality:**
-- Clear naming conventions
-- Appropriate code organization
-- Error handling patterns
-- No magic numbers/strings
+The skill performs comprehensive verification across multiple categories:
 
-**Security Basics:**
-- No hardcoded secrets or API keys
-- Input validation
-- Secure error handling
-- Safe defaults
+#### 1. Code Quality
 
-**Language-Specific:**
-- TypeScript/JavaScript: Type safety, async patterns, dependency security
-- Python: Type hints, docstrings, virtual environments
-- Go: Error handling, context propagation
-- And more...
+| Check | Description | Severity |
+|-------|-------------|----------|
+| Naming conventions | Clear, descriptive, consistent naming | ⚠️ Warning |
+| Code organization | Appropriate structure and modularity | ⚠️ Warning |
+| Error handling | Proper try/catch, error propagation | ❌ Issue |
+| Magic values | No unexplained numbers/strings | ⚠️ Warning |
+| Documentation | Comments for complex logic | ⚠️ Warning |
 
-**AI Agent-Specific:**
-- State schema validation
-- Tool error handling
-- Prompt injection considerations
-- **NEW: Agent Observability Patterns**
-  - Loop safety (unbounded `while True`, missing breaks)
-  - Retry limit enforcement (tenacity, backoff libraries)
-  - Tool registry consistency (hallucinated tool detection)
-  - Context size awareness (prompt token limits)
-  - Explicit tool listing in prompts
+#### 2. Security
+
+| Check | Description | Severity |
+|-------|-------------|----------|
+| Hardcoded secrets | No API keys, passwords in source | ❌ Issue |
+| Input validation | Validate external data | ❌ Issue |
+| Error exposure | No stack traces in production | ⚠️ Warning |
+| Secure defaults | Safe default configurations | ⚠️ Warning |
+| Dependency vulnerabilities | Known CVEs in dependencies | ❌ Issue |
+
+#### 3. Language-Specific
+
+**Python:**
+| Check | Description |
+|-------|-------------|
+| Type hints | Public functions should have type annotations |
+| Docstrings | Modules, classes, functions should be documented |
+| Requirements pinning | Dependencies should specify versions |
+
+**TypeScript/JavaScript:**
+| Check | Description |
+|-------|-------------|
+| Type safety | Prefer strict mode, avoid `any` |
+| Async handling | Proper error handling for promises |
+| Dependency security | No outdated/vulnerable packages |
+
+**Go:**
+| Check | Description |
+|-------|-------------|
+| Error handling | No ignored errors (`_ = err`) |
+| Context propagation | Pass context through call chains |
+
+#### 4. AI Agent Patterns
+
+**Loop Safety:**
+| Pattern | Language | Severity |
+|---------|----------|----------|
+| `while True:` without `break` | Python | ⚠️ Warning |
+| `while (true)` without break | TS/JS | ⚠️ Warning |
+| `for { }` without break/return | Go | ⚠️ Warning |
+| Recursive calls without depth limit | All | ⚠️ Warning |
+
+**Retry Limits:**
+| Pattern | Required Parameter | Severity |
+|---------|-------------------|----------|
+| `@retry` (tenacity) | `stop=stop_after_attempt(n)` | ❌ Issue |
+| `@backoff.on_exception` | `max_tries=n` | ❌ Issue |
+| `retry` (async-retry) | `retries: n` | ❌ Issue |
+| `p-retry` | `retries: n` | ❌ Issue |
+
+**Tool Registry:**
+| Check | Description | Severity |
+|-------|-------------|----------|
+| Hallucinated tools | Tool references not in registry | ❌ Issue |
+| Undocumented tools | Tools not listed in prompts | ⚠️ Warning |
+
+**Context Management:**
+| Content Type | Warning | Issue |
+|--------------|---------|-------|
+| System prompt | > 4,000 tokens (~16KB) | > 8,000 tokens (~32KB) |
+| Single tool description | > 500 tokens (~2KB) | > 1,000 tokens (~4KB) |
+| Total tool descriptions | > 2,000 tokens (~8KB) | > 4,000 tokens (~16KB) |
+
+#### 5. Framework Detection
+
+Automatically detects and applies framework-specific checks:
+
+| Framework | Detection | Special Checks |
+|-----------|-----------|----------------|
+| LangGraph | `langgraph` in imports | State schema, node connectivity |
+| CrewAI | `crewai` in imports | Agent roles, task dependencies |
+| AutoGen | `autogen` in imports | Agent configuration |
+| LangChain | `langchain` in imports | Chain composition, memory config |
+| Custom | Direct SDK usage | General agent patterns |
 
 ## Testing the Skill
 
