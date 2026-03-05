@@ -269,33 +269,69 @@ See [`tests/fixtures/README.md`](tests/fixtures/README.md) for expected results.
 
 ## Report Format
 
-The skill generates a structured markdown report:
+The skill generates a structured markdown report with agent-specific analysis:
 
 ```markdown
 # Verification Report
 
 **Project:** my-project
-**Date:** 2026-03-02
+**Date:** 2026-03-04
 **Mode:** Standalone
 **Files analyzed:** 12
+**Agent type detected:** LangGraph
 
 ## Summary
 
-✅ 8 checks passed | ⚠️ 3 warnings | ❌ 1 issue
+✅ 8 checks passed | ⚠️ 3 warnings | ❌ 2 issues
+
+### By Category
+| Category | Pass | Warn | Issue |
+|----------|------|------|-------|
+| Code Quality | 5 | 1 | 0 |
+| Security | 2 | 0 | 1 |
+| Agent Patterns | 1 | 2 | 1 |
+
+## Agent Pattern Analysis
+
+### Loop Safety
+- [x] All retry mechanisms have explicit limits
+- [ ] ⚠️ Potential unbounded loop at `agent/loop.py:45`
+
+### Tool Consistency
+- [x] Tool registry found: 5 tools defined
+- [ ] ❌ 1 hallucinated tool reference in prompts
+
+### Context Management
+- [ ] ⚠️ System prompt exceeds recommended size (6.2K tokens)
+- [x] Tool descriptions within limits
 
 ## Findings
 
 ### ✅ Passing
 - Naming conventions: Consistent camelCase used throughout
+- Error handling: All async functions have try/catch
 
 ### ⚠️ Warnings
 - Missing type hints: `utils.py:45`
+  - **Location:** `utils.py:45`
   - **Suggestion:** Add type hints to `process_data()` function
 
 ### ❌ Issues
 - Hardcoded API key: `config.py:12`
+  - **Location:** `config.py:12`
   - **Rule:** No secrets in source code
   - **Fix:** Move to environment variable
+
+## Recommendations
+
+1. Move API keys to environment variables
+2. Add type hints to public functions
+
+## Agent-Specific Recommendations
+
+1. **Loop Safety:** Add `MAX_ITERATIONS` constant to `agent/loop.py`
+2. **Tool Registry:** Remove or implement `execute_sql` tool
+3. **Context Management:** Split system prompt into modular sections
 ```
 
 ## Supported Agents
