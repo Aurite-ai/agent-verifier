@@ -239,6 +239,8 @@ The skill performs comprehensive verification across multiple categories:
 | Single tool description | > 500 tokens (~2KB) | > 1,000 tokens (~4KB) |
 | Total tool descriptions | > 2,000 tokens (~8KB) | > 4,000 tokens (~16KB) |
 
+> **Note:** "System prompt" refers to your agent's prompt files (e.g. `prompts/system.md`, `prompts.py`, `system.md`). Files in `skills/` directories are skill definitions loaded on demand, not static system prompts, and are excluded from this check.
+
 #### 5. Framework Detection
 
 Automatically detects and applies framework-specific checks:

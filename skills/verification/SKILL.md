@@ -79,6 +79,9 @@ Locate implementation files in the project. Check these common locations:
 - `agent.py`, `agent.ts` - Main agent logic
 - `langgraph.json`, `crew.yaml` - Framework configurations
 
+**Exclude from prompt size analysis:**
+- `skills/` directory and all subdirectories — these are skill definition files (e.g. `SKILL.md`) loaded on demand by the coding agent, not static system prompts embedded in every LLM call. Flagging them for size would be a false positive.
+
 Use `list_files` or equivalent to discover the actual structure, then read relevant files.
 
 ### Step 3: Verify Code Against Rules
@@ -219,6 +222,7 @@ If the project appears to be an AI agent (LangGraph, CrewAI, AutoGen, LangChain,
    - Measure prompt sizes (estimate tokens)
    - Check for tool listings in system prompts
    - Verify tool references against registry
+   - **Exclude `skills/` directories** — files under `skills/` (e.g. `SKILL.md`) are skill definitions loaded on demand, not static system prompts. Do not flag them for context size.
 
 4. **Cross-reference**
    - Tools in prompts vs registry (flag mismatches)
