@@ -348,6 +348,38 @@ This skill works with any agent supported by the [skills CLI](https://github.com
 - Windsurf
 - And [30+ more](https://github.com/vercel-labs/skills#supported-agents)
 
+## Check Reliability
+
+Because Agent Verifier runs as an AI agent skill rather than a deterministic parser, checks are classified into two tiers. Every finding in the report is tagged accordingly.
+
+| Tier | Tag | How it's applied | Reliability |
+|------|-----|-----------------|-------------|
+| Pattern-matched | `[P]` | Mechanical — rule applied exactly as specified to code structure | High — same answer on every run |
+| Heuristic | `[H]` | Judgment — requires interpretation of intent or quality | Best-effort — may vary |
+
+**Pattern-matched checks** (reliable):
+
+| Check | What it looks for |
+|-------|------------------|
+| Retry limits | `@retry` / `@backoff` / `p-retry` without explicit stop parameter |
+| Loop safety | `while True` / `for {}` / `while (true)` without `break` in scope |
+| Tool registry | Tool names referenced in prompts but absent from definitions |
+| Context size | `len(prompt) / 4` compared against token thresholds |
+| Hardcoded secrets | Assignments to `API_KEY`, `SECRET`, `PASSWORD`, `TOKEN` string literals |
+| No `any` types (TS) | Unqualified `: any` annotations |
+| Ignored errors (Go) | `_ = functionCall()` where function returns `error` |
+| LangGraph cycles | Graph cycles with no reachable `END` in edge mappings |
+
+**Heuristic checks** (best-effort):
+
+| Check | Why it requires judgment |
+|-------|-------------------------|
+| Code organization | "Appropriate structure" is context-dependent |
+| Naming conventions | Consistency requires understanding the project's conventions |
+| Input validation | Whether validation is sufficient depends on the threat model |
+| Docstring quality | Presence is checkable; usefulness is not |
+| Tool error handling | What counts as adequate handling varies |
+
 ## Privacy
 
 All code analysis happens locally. Your code never leaves your machine.
