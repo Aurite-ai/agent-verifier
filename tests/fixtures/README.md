@@ -59,11 +59,26 @@ Any of these will work:
 
 ### Retry Limit Validation (`retry_limits/`)
 
+**Decorator-based (tenacity / backoff):**
+
 | File | Expected | Pattern Detected |
 |------|----------|------------------|
-| `retry_no_limit.py` | ❌ Issue | `@retry` at lines 16, 30, 45 without `stop` parameter |
+| `retry_no_limit.py` | ❌ Issue | `@retry` without `stop=` parameter |
 | `retry_with_limit.py` | ✅ Pass | All `@retry` decorators have `stop_after_attempt` or `stop_after_delay` |
-| `backoff_no_limit.py` | ❌ Issue | `@backoff.on_exception` at lines 13, 27, 45 without `max_tries` |
+| `backoff_no_limit.py` | ❌ Issue | `@backoff.on_exception` without `max_tries=` |
+
+**HTTP client retry (urllib3 / requests):**
+
+| File | Expected | Pattern Detected |
+|------|----------|------------------|
+| `urllib3_no_limit.py` | ❌ Issue | `Retry()` without `total=`; `Retry(total=0)`; `Retry(connect=3, read=3)` without `total=` |
+| `urllib3_with_limit.py` | ✅ Pass | `Retry(total=3)` and `HTTPAdapter(max_retries=3)` (integer) |
+
+**Custom while-loop retry:**
+
+| File | Expected | Pattern Detected |
+|------|----------|------------------|
+| `custom_while_retry.py` | ❌ Issue (fn 1 & 2) / ✅ Pass (fn 3) | `while True` retry without counter; `range(retries)` where max is caller-controlled; `while attempt < MAX_RETRIES` with explicit bound |
 
 ### Tool Registry Consistency (`tool_registry/`)
 
