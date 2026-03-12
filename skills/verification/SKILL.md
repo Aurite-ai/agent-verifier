@@ -1,5 +1,6 @@
 ---
 name: verification
+version: "0.7.0"
 description: Verify code against organizational policies, security requirements, and framework best practices. Use when asked to "verify", "review", "audit", "check compliance", or "validate" code.
 ---
 
