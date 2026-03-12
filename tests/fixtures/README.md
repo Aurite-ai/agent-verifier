@@ -82,15 +82,28 @@ Any of these will work:
 
 ### Tool Registry Consistency (`tool_registry/`)
 
+**Decorator-based (LangChain `@tool`):**
+
 | File | Expected | Pattern Detected |
 |------|----------|------------------|
-| `tools.py` | ✅ Pass | Defines tools: `search_docs`, `write_file`, `run_tests` |
-| `prompt.md` | ❌ Issue | References `execute_sql` (lines 19, 26, 33, 48) - not in registry |
+| `tools.py` | ✅ Pass | Defines `search_docs`, `write_file` via `@tool`; `run_tests` via schema dict |
+| `prompt.md` | ❌ Issue | References `execute_sql` — not in registry |
 
-**Cross-reference result:** 
-- Registered tools: `search_docs`, `write_file`, `run_tests`
-- Referenced tools: `search_docs`, `write_file`, `execute_sql`, `run_tests`
-- Hallucinated: `execute_sql` (4 references)
+Cross-reference: registered `search_docs`, `write_file`, `run_tests` · hallucinated `execute_sql` (4 references)
+
+**OpenAI function-calling dict format:**
+
+| File | Expected | Pattern Detected |
+|------|----------|------------------|
+| `openai_format_tools.py` | ✅ Pass | Extracts `search_docs`, `write_file`, `run_tests` from `{"type": "function", "function": {"name": "..."}}` dicts — no decorators present |
+
+**Anthropic tool-use dict format:**
+
+| File | Expected | Pattern Detected |
+|------|----------|------------------|
+| `anthropic_format_tools.py` | ✅ Pass | Extracts `search_docs`, `write_file`, `run_tests` from `{"name": "...", "input_schema": {...}}` dicts — no decorators present |
+
+> These two fixtures test that the verifier can build a correct tool registry from dict-based definitions, not just decorator-based ones. If either file's tools are not detected, cross-referencing against a prompt will produce false-positive hallucination errors for every tool it defines.
 
 ### Prompt Size Warnings (`prompt_size/`)
 
