@@ -86,6 +86,18 @@ Use `list_files` or equivalent to discover the actual structure, then read relev
 
 ### Step 3: Verify Code Against Rules
 
+#### Check Tiers
+
+Every check in this skill is classified as one of two tiers. Apply them differently:
+
+- **`[PATTERN]`** — Mechanical. The answer is objectively correct or incorrect based on code structure. Apply the rule exactly as written. Do not use judgment to soften or skip. A missing `stop=` parameter on `@retry` is always an ❌ Issue, regardless of context. Report these with high confidence.
+
+- **`[HEURISTIC]`** — Judgment required. The rule describes a quality signal that requires interpretation. Apply it as a best-effort assessment. Mark these findings clearly so the reader knows they reflect analysis, not a deterministic check.
+
+In the report, tag every finding with its tier: `[P]` for pattern, `[H]` for heuristic.
+
+---
+
 Analyze code against all available rules:
 
 **With Kahuna (enhanced mode):**
@@ -94,98 +106,123 @@ Analyze code against all available rules:
 3. **Framework best practices** - Patterns from surfaced context
 
 **Standalone (built-in rules):**
-1. **General code quality**
+
+1. **`[HEURISTIC]` General code quality**
    - Clear naming conventions (descriptive, consistent)
    - Appropriate code organization and structure
    - Error handling patterns
    - No magic numbers/strings without constants
 
-2. **Security basics**
-   - No hardcoded secrets, API keys, or passwords
-   - Input validation on external data
-   - Proper error messages (no stack traces in production)
-   - Secure defaults
+2. **Security basics** — mixed tier (see per-item labels below:)
+   - `[PATTERN]` No hardcoded secrets — scan for assignments matching `API_KEY`, `SECRET`, `PASSWORD`, `TOKEN`, `PRIVATE_KEY` (case-insensitive) assigned to string literals. Flag any match as ❌ Issue.
+   - `[HEURISTIC]` Input validation on external data
+   - `[HEURISTIC]` Proper error messages (no stack traces in production)
+   - `[HEURISTIC]` Secure defaults
 
 3. **Language-specific (auto-detected):**
 
    *TypeScript/JavaScript:*
-   - Type safety (prefer strict mode)
-   - Async/await error handling
-   - Dependency security (outdated/vulnerable packages)
-   - No `any` types without justification
+   - `[PATTERN]` Type safety — flag if `tsconfig.json` does not have `"strict": true`
+   - `[HEURISTIC]` Async/await error handling
+   - `[PATTERN]` No `any` types — flag unqualified `: any` annotations as ⚠️ Warning
+   - `[HEURISTIC]` Dependency security (outdated/vulnerable packages)
 
    *Python:*
-   - Type hints on public functions
-   - Docstrings for modules, classes, functions
-   - Virtual environment usage
-   - Requirements pinning
+   - `[PATTERN]` Type hints — flag any `def` function in public scope (no leading `_`) that has parameters without type annotations, as ⚠️ Warning
+   - `[HEURISTIC]` Docstrings for modules, classes, functions
+   - `[PATTERN]` Requirements pinning — flag any line in `requirements.txt` / `pyproject.toml` dependencies using `>=`, `>`, or no version specifier (should use `==`), as ⚠️ Warning
 
    *Go:*
-   - Error handling (no ignored errors)
-   - Context propagation
-   - Proper package structure
+   - `[PATTERN]` No ignored errors — flag any `_ = ` assignments where the right-hand side is a function call returning `error`, as ❌ Issue
+   - `[HEURISTIC]` Context propagation
+   - `[HEURISTIC]` Proper package structure
 
 4. **AI Agent-specific (if detected):**
-   - State schema validation
-   - Tool error handling
-   - Prompt injection considerations
-   - Rate limiting awareness
+   - `[HEURISTIC]` State schema validation
+   - `[HEURISTIC]` Tool error handling
+   - `[HEURISTIC]` Prompt injection considerations
+   - `[HEURISTIC]` Rate limiting awareness
 
-   **Agent Observability Patterns (NEW):**
+   **Agent Observability Patterns:**
 
-   5. **Loop Safety**
-      - All `while True` patterns must have explicit break conditions
-      - Retry decorators must specify max attempts
-      - Agent loops must have iteration counters
-      - Recursive functions must have termination conditions
+   5. **`[PATTERN]` Loop Safety**
 
-      | Pattern | Language | Detection | Severity |
-      |---------|----------|-----------|----------|
-      | `while True:` without `break` in scope | Python | Regex + scope analysis | ⚠️ Warning |
-      | `for { }` without break/return | Go | Regex | ⚠️ Warning |
-      | `while (true)` without break | TS/JS | Regex | ⚠️ Warning |
-      | Recursive call without termination check | All | Call graph analysis | ⚠️ Warning |
-      | `@retry` without `max_retries` or `stop` | Python | Decorator inspection | ❌ Issue |
-      | `retryable()` without limit config | TS/JS | Function call inspection | ❌ Issue |
+      Apply mechanically. Do not pass a loop because it "looks like it might terminate."
 
-   6. **Retry Limit Enforcement**
-      - Retry decorators must specify max attempts
-      - Backoff strategies must have maximum delay caps
+      | Pattern to find | Pass condition | Severity |
+      |-----------------|----------------|----------|
+      | `while True:` in Python | A `break` statement exists within the same block scope | ⚠️ Warning if absent |
+      | `for { }` in Go | A `break` or `return` exists within the block | ⚠️ Warning if absent |
+      | `while (true)` in TS/JS | A `break` or `return` exists within the block | ⚠️ Warning if absent |
+      | Function calls itself recursively | A non-recursive return path exists (base case), OR a depth/counter parameter is present | ⚠️ Warning if absent |
 
-      | Library/Pattern | Required Parameter | Language |
-      |-----------------|-------------------|----------|
-      | `@retry` (tenacity) | `stop=stop_after_attempt(n)` | Python |
-      | `@backoff.on_exception` | `max_tries=n` | Python |
-      | `retry` (async-retry) | `retries: n` | Node.js |
-      | `p-retry` | `retries: n` | Node.js |
-      | Custom `while` retry | Counter with max check | All |
+   6. **`[PATTERN]` Retry Limit Enforcement**
 
-   7. **Tool Registry Consistency**
-      - All tool references must exist in tool definitions
-      - Tool names in prompts must match registered tools
-      - No undefined tool calls in agent code
+      Apply mechanically. Check each decorator or call against the table below. If the required parameter is absent, flag as ❌ Issue regardless of other parameters present.
 
-      *Detection approach:*
-      1. Build tool inventory from definitions (`@tool`, `@function_tool`, schema `name:`)
-      2. Find tool references in code and prompts
-      3. Flag any reference not in the inventory
+      **Decorator-based (Python):**
 
-   8. **Context Size Awareness**
-      - System prompts should not exceed recommended limits
-      - Large file inclusions should be flagged
+      | Library/Pattern | Required parameter | Fail condition |
+      |-----------------|-------------------|----------------|
+      | `@retry` (tenacity) | `stop=stop_after_attempt(n)` or `stop=stop_after_delay(n)` | `stop=` absent |
+      | `@backoff.on_exception` | `max_tries=n` | `max_tries=` absent |
 
-      | Content Type | Warning Threshold | Issue Threshold |
-      |--------------|-------------------|-----------------|
-      | System prompt | > 4,000 tokens (~16KB) | > 8,000 tokens (~32KB) |
-      | Single tool description | > 500 tokens (~2KB) | > 1,000 tokens (~4KB) |
-      | Total tool descriptions | > 2,000 tokens (~8KB) | > 4,000 tokens (~16KB) |
+      **HTTP client retry configuration (Python):**
 
-      *Token estimation:* Use heuristic of ~4 characters per token for English text.
+      | Library/Pattern | Required parameter | Fail condition |
+      |-----------------|-------------------|----------------|
+      | `urllib3.Retry(...)` | `total=n` where n > 0 | `total=` absent or `total=0` |
+      | `HTTPAdapter(max_retries=Retry(...))` | The `Retry` object must have `total=n` | `total=` absent in the `Retry` object passed to `max_retries=` |
+      | `httpx.HTTPTransport(retries=n)` | `retries=n` where n > 0 | `retries=` absent or `retries=0` |
 
-   9. **Explicit Tool Listing**
+      **AWS SDK (Python/boto3):**
+
+      | Library/Pattern | Required parameter | Fail condition |
+      |-----------------|-------------------|----------------|
+      | `Config(retries={...})` (botocore) | `max_attempts` key with value > 1 | `max_attempts` absent, or `max_attempts: 0` or `max_attempts: 1` (no retries) |
+
+      > Note: boto3 clients without any explicit `Config(retries=...)` use the SDK default (3 attempts, standard mode) — do **not** flag the absence of retry config as an issue. Only flag when retry config is present but disables retries.
+
+      **JavaScript/TypeScript:**
+
+      | Library/Pattern | Required parameter | Fail condition |
+      |-----------------|-------------------|----------------|
+      | `retry(...)` (async-retry) | `retries: n` in options object | `retries:` absent |
+      | `pRetry(...)` (p-retry) | `retries: n` in options object | `retries:` absent |
+
+      **Custom retry loops (all languages):**
+
+      A `while True:` / `while (true)` / `for {}` block that contains a `try/except` (or `try/catch`) with a `continue` or a re-invocation of the same call is a manual retry loop. Apply the same rule as Loop Safety: a bounded counter must be present.
+
+      | Pattern to find | Pass condition | Fail condition |
+      |-----------------|----------------|----------------|
+      | Loop + `try/except` + `continue` | An integer counter is declared before the loop and incremented inside it, with a conditional check against a max | No counter present → ❌ Issue |
+
+   7. **`[PATTERN]` Tool Registry Consistency**
+
+      Apply mechanically:
+      1. Collect all tool names from definition files. A tool name is defined by:
+         - `@tool` or `@function_tool` decorator on a function → the function name
+         - A dict/object with a `"name":` or `name:` key at the top level of a tools file
+      2. Collect all tool name references from prompt files (`.md`, `.txt`, `prompts.py`). A reference is any backtick-quoted identifier or string that names a capability the agent is told it can use.
+      3. Flag every reference not in the definition list as ❌ Issue (hallucinated tool).
+      4. Flag every defined tool not mentioned in any prompt as ⚠️ Warning (undocumented tool).
+
+   8. **`[PATTERN]` Context Size Awareness**
+
+      Apply mechanically using the formula: `token_estimate = len(file_content_chars) / 4`
+
+      | Content | ⚠️ Warning threshold | ❌ Issue threshold |
+      |---------|----------------------|-------------------|
+      | System prompt file | > 4,000 tokens | > 8,000 tokens |
+      | Single tool description block | > 500 tokens | > 1,000 tokens |
+      | All tool descriptions combined | > 2,000 tokens | > 4,000 tokens |
+
+      Exclude `skills/` directories from this check (see Step 2).
+
+   9. **`[HEURISTIC]` Explicit Tool Listing**
       - System prompts should list available tools
       - Tool capabilities should be clearly described
-      - Agents should know their boundaries
 
       *Detection:* Check for tool listing sections (headers like "Available Tools", "You have access to")
 
@@ -228,6 +265,48 @@ If the project appears to be an AI agent (LangGraph, CrewAI, AutoGen, LangChain,
    - Tools in prompts vs registry (flag mismatches)
    - State fields vs usage
    - Config vs implementation
+
+5. **LangGraph graph cycle analysis** *(only when LangGraph is detected)*
+
+   LangGraph agents define control flow as a directed graph of nodes and edges, not `while` loops. A cycle in the graph is intentional (the agent loops between "agent" and "tools" nodes), but **every cycle must have at least one conditional edge that can route to `END`**. A cycle with no reachable `END` is an infinite loop at the graph level.
+
+   **Detection steps:**
+
+   a. Find the graph file (`graph.py`, `graph.ts`, or file containing `StateGraph`/`MessageGraph`)
+
+   b. Build an edge map by scanning for:
+      - `workflow.add_edge(source, dest)` — unconditional edge
+      - `workflow.add_conditional_edges(source, fn, mapping)` — conditional edges; extract all destination values from the mapping dict
+
+   c. Identify cycles: find any node that is reachable from itself by following edges
+
+   d. For each cycle, check if `END` (or `"__end__"`) is reachable from any node in the cycle via a conditional edge mapping
+
+   e. Flag accordingly:
+
+   | Condition | Severity |
+   |-----------|----------|
+   | Cycle exists, `END` reachable via conditional edge | ✅ Pass |
+   | Cycle exists, no path to `END` from any node in cycle | ❌ Issue |
+   | Graph has no `END` node at all | ❌ Issue |
+   | Node has no outgoing edges and is not `END` | ⚠️ Warning (dead-end node) |
+
+   **Example — infinite cycle (❌ Issue):**
+   ```python
+   workflow.add_edge("agent", "tools")
+   workflow.add_edge("tools", "agent")  # cycle, but no path to END
+   ```
+
+   **Example — cycle with exit (✅ Pass):**
+   ```python
+   workflow.add_conditional_edges("agent", should_continue, {
+       "continue": "tools",
+       "end": END          # END is reachable → cycle is safe
+   })
+   workflow.add_edge("tools", "agent")
+   ```
+
+   **Note:** The check inspects the *static structure* of `add_edge` / `add_conditional_edges` calls. It does not evaluate the routing function itself (`should_continue`) — that is runtime behaviour. If the mapping dict contains `END` as a possible destination, the check passes.
 
 **Example findings:**
 
@@ -301,16 +380,18 @@ Output a structured verification report with agent-specific sections when applic
 
 ## Findings
 
+> `[P]` = pattern-matched (structurally reliable) · `[H]` = heuristic (best-effort judgment)
+
 ### ✅ Passing
-- [Check name]: [Brief confirmation of compliance]
+- `[P]` [Check name]: [Brief confirmation of compliance]
 
 ### ⚠️ Warnings
-- [Check name]: [Description of concern]
+- `[P|H]` [Check name]: [Description of concern]
   - **Location:** [file:line if applicable]
   - **Suggestion:** [How to address]
 
 ### ❌ Issues
-- [Check name]: [Description of violation]
+- `[P|H]` [Check name]: [Description of violation]
   - **Location:** [file:line]
   - **Rule:** [Which rule this violates]
   - **Fix:** [Specific remediation steps]
@@ -363,3 +444,4 @@ If confirmed:
 - **Be specific:** Include file names and line numbers when reporting issues.
 - **Explain the "why":** Help developers understand why each rule matters.
 - **Honor existing configs:** Respect project's existing lint rules, `.editorconfig`, etc.
+- **Respect tier discipline:** `[PATTERN]` checks must be applied exactly as specified — do not use judgment to pass something the rule says should fail. `[HEURISTIC]` checks require judgment — apply them thoughtfully and mark findings clearly so the reader understands the confidence level.

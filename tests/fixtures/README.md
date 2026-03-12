@@ -10,7 +10,8 @@ tests/fixtures/
 ├── infinite_loop/           # Loop safety pattern detection
 ├── retry_limits/            # Retry limit validation
 ├── tool_registry/           # Tool registry consistency
-└── prompt_size/             # Context size awareness
+├── prompt_size/             # Context size awareness
+└── langgraph_cycles/        # LangGraph graph cycle analysis
 ```
 
 ## How to Test
@@ -58,11 +59,26 @@ Any of these will work:
 
 ### Retry Limit Validation (`retry_limits/`)
 
+**Decorator-based (tenacity / backoff):**
+
 | File | Expected | Pattern Detected |
 |------|----------|------------------|
-| `retry_no_limit.py` | ❌ Issue | `@retry` at lines 16, 30, 45 without `stop` parameter |
+| `retry_no_limit.py` | ❌ Issue | `@retry` without `stop=` parameter |
 | `retry_with_limit.py` | ✅ Pass | All `@retry` decorators have `stop_after_attempt` or `stop_after_delay` |
-| `backoff_no_limit.py` | ❌ Issue | `@backoff.on_exception` at lines 13, 27, 45 without `max_tries` |
+| `backoff_no_limit.py` | ❌ Issue | `@backoff.on_exception` without `max_tries=` |
+
+**HTTP client retry (urllib3 / requests):**
+
+| File | Expected | Pattern Detected |
+|------|----------|------------------|
+| `urllib3_no_limit.py` | ❌ Issue | `Retry()` without `total=`; `Retry(total=0)`; `Retry(connect=3, read=3)` without `total=` |
+| `urllib3_with_limit.py` | ✅ Pass | `Retry(total=3)` and `HTTPAdapter(max_retries=3)` (integer) |
+
+**Custom while-loop retry:**
+
+| File | Expected | Pattern Detected |
+|------|----------|------------------|
+| `custom_while_retry.py` | ❌ Issue (fn 1 & 2) / ✅ Pass (fn 3) | `while True` retry without counter; `range(retries)` where max is caller-controlled; `while attempt < MAX_RETRIES` with explicit bound |
 
 ### Tool Registry Consistency (`tool_registry/`)
 
@@ -84,6 +100,20 @@ Any of these will work:
 | `large_prompt.md` | 12,847 bytes | ~3,212 tokens | ✅ Pass (under 4K threshold) |
 
 **Note:** The large_prompt.md is actually ~3.2K tokens, below the 4K warning threshold. For a true warning test, a prompt would need to exceed ~16KB.
+
+### LangGraph Cycle Analysis (`langgraph_cycles/`)
+
+| File | Expected | Pattern Detected |
+|------|----------|------------------|
+| `graph_infinite_cycle.py` | ❌ Issue | Cycle between `agent` ↔ `tools` with no path to `END` |
+| `graph_with_conditional_end.py` | ✅ Pass | Cycle exists but `add_conditional_edges` maps to `END` |
+| `graph_linear.py` | ✅ Pass | No cycle; direct `add_edge("agent", END)` |
+
+**Detection logic:**
+1. Build edge map from `add_edge` and `add_conditional_edges` calls
+2. Find nodes reachable from themselves (cycles)
+3. For each cycle, check whether `END` appears in any conditional edge mapping reachable from that cycle
+4. Flag cycles with no `END` reachable as ❌ Issue
 
 ---
 
