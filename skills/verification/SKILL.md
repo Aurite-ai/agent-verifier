@@ -130,7 +130,7 @@ Analyze code against all available rules:
    *Python:*
    - `[PATTERN]` Type hints — flag any `def` function in public scope (no leading `_`) that has parameters without type annotations, as ⚠️ Warning
    - `[HEURISTIC]` Docstrings for modules, classes, functions
-   - `[PATTERN]` Requirements pinning — flag any line in `requirements.txt` / `pyproject.toml` dependencies using `>=`, `>`, or no version specifier (should use `==`), as ⚠️ Warning
+   - `[PATTERN]` Requirements pinning — flag any line in `requirements.txt` / `pyproject.toml` dependencies using `>=`, `>`, or no version specifier (should use `==`), as ❌ Issue
 
    *Go:*
    - `[PATTERN]` No ignored errors — flag any `_ = ` assignments where the right-hand side is a function call returning `error`, as ❌ Issue
@@ -207,6 +207,9 @@ Analyze code against all available rules:
       2. Collect all tool name references from prompt files (`.md`, `.txt`, `prompts.py`). A reference is any backtick-quoted identifier or string that names a capability the agent is told it can use.
       3. Flag every reference not in the definition list as ❌ Issue (hallucinated tool).
       4. Flag every defined tool not mentioned in any prompt as ⚠️ Warning (undocumented tool).
+      5. **`[HEURISTIC]` Tools never bound to LLM** — Find where tools are defined (any list, registry, or decorated set of functions intended as agent tools). Then find where the LLM is invoked (the call that sends messages to the model). Check whether the tools are passed to that invocation point. If a tools collection exists but is never connected to the LLM call, flag as ❌ Issue: the LLM has no knowledge of these tools and cannot invoke them — the tool-calling architecture is broken or incomplete.
+
+         The connection can take many forms depending on the framework (e.g. a `tools=` argument, a bind method, a plugin registration API, an agent constructor parameter). Do not look for any specific method name — reason about whether the defined tools actually reach the LLM invocation. Example of the broken pattern: tools decorated with `@tool` and collected in `ALL_TOOLS`, but the LLM call never receives `ALL_TOOLS` in any form.
 
    8. **`[PATTERN]` Context Size Awareness**
 
@@ -398,6 +401,7 @@ Output a structured verification report with agent-specific sections when applic
 ### Tool Consistency
 - [x] Tool registry found: X tools defined
 - [ ] ❌ Y hallucinated tool references in prompts
+- [ ] ❌ `[H]` Tools defined but never connected to LLM invocation — LLM cannot invoke tools
 - [ ] ⚠️ Z tools not documented in system prompt
 
 ### Context Management
