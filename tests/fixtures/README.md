@@ -10,7 +10,8 @@ tests/fixtures/
 ├── infinite_loop/           # Loop safety pattern detection
 ├── retry_limits/            # Retry limit validation
 ├── tool_registry/           # Tool registry consistency
-└── prompt_size/             # Context size awareness
+├── prompt_size/             # Context size awareness
+└── langgraph_cycles/        # LangGraph graph cycle analysis
 ```
 
 ## How to Test
@@ -84,6 +85,20 @@ Any of these will work:
 | `large_prompt.md` | 12,847 bytes | ~3,212 tokens | ✅ Pass (under 4K threshold) |
 
 **Note:** The large_prompt.md is actually ~3.2K tokens, below the 4K warning threshold. For a true warning test, a prompt would need to exceed ~16KB.
+
+### LangGraph Cycle Analysis (`langgraph_cycles/`)
+
+| File | Expected | Pattern Detected |
+|------|----------|------------------|
+| `graph_infinite_cycle.py` | ❌ Issue | Cycle between `agent` ↔ `tools` with no path to `END` |
+| `graph_with_conditional_end.py` | ✅ Pass | Cycle exists but `add_conditional_edges` maps to `END` |
+| `graph_linear.py` | ✅ Pass | No cycle; direct `add_edge("agent", END)` |
+
+**Detection logic:**
+1. Build edge map from `add_edge` and `add_conditional_edges` calls
+2. Find nodes reachable from themselves (cycles)
+3. For each cycle, check whether `END` appears in any conditional edge mapping reachable from that cycle
+4. Flag cycles with no `END` reachable as ❌ Issue
 
 ---
 

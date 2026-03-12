@@ -229,6 +229,48 @@ If the project appears to be an AI agent (LangGraph, CrewAI, AutoGen, LangChain,
    - State fields vs usage
    - Config vs implementation
 
+5. **LangGraph graph cycle analysis** *(only when LangGraph is detected)*
+
+   LangGraph agents define control flow as a directed graph of nodes and edges, not `while` loops. A cycle in the graph is intentional (the agent loops between "agent" and "tools" nodes), but **every cycle must have at least one conditional edge that can route to `END`**. A cycle with no reachable `END` is an infinite loop at the graph level.
+
+   **Detection steps:**
+
+   a. Find the graph file (`graph.py`, `graph.ts`, or file containing `StateGraph`/`MessageGraph`)
+
+   b. Build an edge map by scanning for:
+      - `workflow.add_edge(source, dest)` — unconditional edge
+      - `workflow.add_conditional_edges(source, fn, mapping)` — conditional edges; extract all destination values from the mapping dict
+
+   c. Identify cycles: find any node that is reachable from itself by following edges
+
+   d. For each cycle, check if `END` (or `"__end__"`) is reachable from any node in the cycle via a conditional edge mapping
+
+   e. Flag accordingly:
+
+   | Condition | Severity |
+   |-----------|----------|
+   | Cycle exists, `END` reachable via conditional edge | ✅ Pass |
+   | Cycle exists, no path to `END` from any node in cycle | ❌ Issue |
+   | Graph has no `END` node at all | ❌ Issue |
+   | Node has no outgoing edges and is not `END` | ⚠️ Warning (dead-end node) |
+
+   **Example — infinite cycle (❌ Issue):**
+   ```python
+   workflow.add_edge("agent", "tools")
+   workflow.add_edge("tools", "agent")  # cycle, but no path to END
+   ```
+
+   **Example — cycle with exit (✅ Pass):**
+   ```python
+   workflow.add_conditional_edges("agent", should_continue, {
+       "continue": "tools",
+       "end": END          # END is reachable → cycle is safe
+   })
+   workflow.add_edge("tools", "agent")
+   ```
+
+   **Note:** The check inspects the *static structure* of `add_edge` / `add_conditional_edges` calls. It does not evaluate the routing function itself (`should_continue`) — that is runtime behaviour. If the mapping dict contains `END` as a possible destination, the check passes.
+
 **Example findings:**
 
 ```markdown
