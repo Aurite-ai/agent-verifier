@@ -96,6 +96,17 @@ Every check in this skill is classified as one of two tiers. Apply them differen
 
 In the report, tag every finding with its tier: `[P]` for pattern, `[H]` for heuristic.
 
+#### Fallback Rule
+
+Every `[PATTERN]` check has a paired `[HEURISTIC]` fallback. After running the pattern table for a given category, also scan for behavior that *resembles* the anti-pattern but doesn't match any specific table entry. This catches novel libraries, custom implementations, and pattern drift that rigid tables cannot anticipate.
+
+Heuristic fallback findings are always:
+- Tagged `[H]` in the report
+- Reported as ⚠️ Warning (never ❌ Issue) — they reflect judgment, not a definitive match
+- Accompanied by a note explaining why a manual review is recommended
+
+The pattern check is the **primary** detector (high confidence, low false positives). The heuristic fallback is the **safety net** (lower confidence, catches what patterns miss).
+
 ---
 
 Analyze code against all available rules:
@@ -156,6 +167,16 @@ Analyze code against all available rules:
       | `while (true)` in TS/JS | A `break` or `return` exists within the block | ⚠️ Warning if absent |
       | Function calls itself recursively | A non-recursive return path exists (base case), OR a depth/counter parameter is present | ⚠️ Warning if absent |
 
+      **`[HEURISTIC]` Fallback: Unrecognized Loop Patterns**
+
+      After applying the pattern table above, also scan for loop-like behavior that may run indefinitely but doesn't match any specific pattern above:
+      - Any loop where the termination condition depends entirely on external/runtime state with no timeout or max-iteration guard
+      - Generator functions that `yield` indefinitely without a documented exit condition
+      - Event loops or polling loops (e.g. `while not done:`, `while queue:`) without timeout parameters
+      - Recursive call chains across multiple functions (A calls B, B calls A) without depth tracking
+
+      If found, flag as ⚠️ Warning: *"Potential unbounded loop not matching known patterns — verify termination condition manually"*
+
    6. **`[PATTERN]` Retry Limit Enforcement**
 
       Apply mechanically. Check each decorator or call against the table below. If the required parameter is absent, flag as ❌ Issue regardless of other parameters present.
@@ -198,6 +219,16 @@ Analyze code against all available rules:
       |-----------------|----------------|----------------|
       | Loop + `try/except` + `continue` | An integer counter is declared before the loop and incremented inside it, with a conditional check against a max | No counter present → ❌ Issue |
 
+      **`[HEURISTIC]` Fallback: Unrecognized Retry Patterns**
+
+      After applying the pattern tables above, also scan for retry-like behavior that doesn't match any known library or pattern:
+      - Any function or decorator containing "retry" in its name not covered by the tables above
+      - Any imported module with "retry" in its package name not listed in the tables (e.g. `stamina`, `retry`, `aiohttp_retry`)
+      - A loop containing: sleep/delay + exception handling + re-invocation of the same external call, where no counter or max-attempt mechanism is visible
+      - Configuration objects with keys like `max_retries`, `retry_count`, `attempts` that may belong to unlisted libraries
+
+      If found, flag as ⚠️ Warning: *"Potential retry pattern not matching known libraries — verify retry bounds manually"*
+
    7. **`[PATTERN]` Tool Registry Consistency**
 
       Apply mechanically:
@@ -211,6 +242,16 @@ Analyze code against all available rules:
 
          The connection can take many forms depending on the framework (e.g. a `tools=` argument, a bind method, a plugin registration API, an agent constructor parameter). Do not look for any specific method name — reason about whether the defined tools actually reach the LLM invocation. Example of the broken pattern: tools decorated with `@tool` and collected in `ALL_TOOLS`, but the LLM call never receives `ALL_TOOLS` in any form.
 
+      **`[HEURISTIC]` Fallback: Unrecognized Tool Definitions**
+
+      After applying the known tool definition patterns above, also scan for tool-like structures that don't match any known format:
+      - Any dict/object with both `"description"` and `"parameters"` keys that resembles a tool schema but doesn't match the specific patterns listed
+      - Functions with structured docstrings that look like tool descriptions (name, parameter list, return description) but lack a `@tool` decorator
+      - Any variable named `tools`, `tool_list`, `available_tools`, `functions`, or similar containing callable references or schema objects
+      - Class-based tool patterns (classes with `run()`, `execute()`, or `__call__()` methods that appear to wrap external capabilities)
+
+      If found, include in the tool registry count and note: *"Tool detected via heuristic — format not in known pattern table. Verify this is an intended agent tool."*
+
    8. **`[PATTERN]` Context Size Awareness**
 
       Apply mechanically using the formula: `token_estimate = len(file_content_chars) / 4`
@@ -222,6 +263,16 @@ Analyze code against all available rules:
       | All tool descriptions combined | > 2,000 tokens | > 4,000 tokens |
 
       Exclude `skills/` directories from this check (see Step 2).
+
+      **`[HEURISTIC]` Fallback: Borderline and Non-Standard Context Sizes**
+
+      After applying the mechanical threshold check above, also apply judgment in these cases:
+      - When a token estimate falls within 20% of any threshold, flag as ⚠️ Warning: *"Token estimate is approximate (chars/4). Actual token count may differ — consider measuring with a tokenizer if close to limit."*
+      - Dynamically assembled prompts (e.g. f-strings, `.format()`, template concatenation) where the final size depends on runtime data — flag as ⚠️ Warning if the static template alone is large, since runtime content will add to it
+      - Multiple prompt files that are concatenated or chained together — estimate the combined size, not just individual files
+      - Prompt files that include or import other files (e.g. `{% include %}`, `{read_file(...)}`) — note that the effective size may be larger than the single file
+
+      If found, flag as ⚠️ Warning with an explanation of why the actual context size may differ from the static estimate.
 
    9. **`[HEURISTIC]` Explicit Tool Listing**
       - System prompts should list available tools
@@ -337,6 +388,17 @@ If the project appears to be an AI agent (LangGraph, CrewAI, AutoGen, LangChain,
    ```
 
    **Note:** The check inspects the *static structure* of `add_edge` / `add_conditional_edges` calls. It does not evaluate the routing function itself (`should_continue`) — that is runtime behaviour. If the mapping dict contains `END` as a possible destination, the check passes.
+
+   **`[HEURISTIC]` Fallback: Unrecognized Graph and State Machine Patterns**
+
+   After applying LangGraph-specific edge parsing above, also scan for graph-like control flow structures in other frameworks or custom implementations:
+   - State machine definitions with transition tables or dispatch dicts (e.g. `transitions` library, custom `state_map = {"state_a": handler_a, ...}`)
+   - Custom routing logic where nodes call other nodes based on conditions, forming implicit cycles
+   - LangGraph.js patterns using camelCase methods (`.addNode()`, `.addEdge()`, `.addConditionalEdges()`) — apply the same cycle analysis
+   - CrewAI, AutoGen, or other multi-agent frameworks where agents hand off to each other in a potentially circular pattern
+   - Any adjacency list, dict-of-lists, or graph object that defines node connections with no clear termination path
+
+   If a cycle is detected with no visible termination condition, flag as ⚠️ Warning: *"Potential cyclic control flow detected in non-LangGraph graph structure — verify that a termination condition exists"*
 
 **Example findings:**
 
