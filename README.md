@@ -361,14 +361,15 @@ Because Agent Verifier runs as an AI agent skill rather than a deterministic par
 
 | Check | What it looks for |
 |-------|------------------|
-| Retry limits | `@retry` / `@backoff` / `p-retry` without explicit stop parameter |
-| Loop safety | `while True` / `for {}` / `while (true)` without `break` in scope |
-| Tool registry | Tool names referenced in prompts but absent from definitions |
-| Context size | `len(prompt) / 4` compared against token thresholds |
-| Hardcoded secrets | Assignments to `API_KEY`, `SECRET`, `PASSWORD`, `TOKEN` string literals |
-| No `any` types (TS) | Unqualified `: any` annotations |
-| Ignored errors (Go) | `_ = functionCall()` where function returns `error` |
-| LangGraph cycles | Graph cycles with no reachable `END` in edge mappings |
+| Retry limits | `@retry` / `@backoff` / `p-retry` / `urllib3.Retry` without explicit stop/total parameter → ❌ Issue |
+| Loop safety | `while True` / `for {}` / `while (true)` without `break` in scope → ❌ Issue |
+| Tool registry | Tool names referenced in prompts but absent from definitions → ❌ Issue |
+| Context size | `len(prompt) / 4` compared against token thresholds → ⚠️ Warning / ❌ Issue |
+| Requirements pinning | `>=`, `>`, or unpinned deps in `requirements.txt` / `pyproject.toml` → ❌ Issue |
+| Hardcoded secrets | Assignments to `API_KEY`, `SECRET`, `PASSWORD`, `TOKEN` string literals → ❌ Issue |
+| No `any` types (TS) | Unqualified `: any` annotations → ⚠️ Warning |
+| Ignored errors (Go) | `_ = functionCall()` where function returns `error` → ❌ Issue |
+| LangGraph cycles | Graph cycles with no reachable `END` in edge mappings → ❌ Issue |
 
 **Heuristic checks** (best-effort):
 
