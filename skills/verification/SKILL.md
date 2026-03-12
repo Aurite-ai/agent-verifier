@@ -160,12 +160,43 @@ Analyze code against all available rules:
 
       Apply mechanically. Check each decorator or call against the table below. If the required parameter is absent, flag as ❌ Issue regardless of other parameters present.
 
+      **Decorator-based (Python):**
+
       | Library/Pattern | Required parameter | Fail condition |
       |-----------------|-------------------|----------------|
       | `@retry` (tenacity) | `stop=stop_after_attempt(n)` or `stop=stop_after_delay(n)` | `stop=` absent |
       | `@backoff.on_exception` | `max_tries=n` | `max_tries=` absent |
+
+      **HTTP client retry configuration (Python):**
+
+      | Library/Pattern | Required parameter | Fail condition |
+      |-----------------|-------------------|----------------|
+      | `urllib3.Retry(...)` | `total=n` where n > 0 | `total=` absent or `total=0` |
+      | `HTTPAdapter(max_retries=Retry(...))` | The `Retry` object must have `total=n` | `total=` absent in the `Retry` object passed to `max_retries=` |
+      | `httpx.HTTPTransport(retries=n)` | `retries=n` where n > 0 | `retries=` absent or `retries=0` |
+
+      **AWS SDK (Python/boto3):**
+
+      | Library/Pattern | Required parameter | Fail condition |
+      |-----------------|-------------------|----------------|
+      | `Config(retries={...})` (botocore) | `max_attempts` key with value > 1 | `max_attempts` absent, or `max_attempts: 0` or `max_attempts: 1` (no retries) |
+
+      > Note: boto3 clients without any explicit `Config(retries=...)` use the SDK default (3 attempts, standard mode) — do **not** flag the absence of retry config as an issue. Only flag when retry config is present but disables retries.
+
+      **JavaScript/TypeScript:**
+
+      | Library/Pattern | Required parameter | Fail condition |
+      |-----------------|-------------------|----------------|
       | `retry(...)` (async-retry) | `retries: n` in options object | `retries:` absent |
       | `pRetry(...)` (p-retry) | `retries: n` in options object | `retries:` absent |
+
+      **Custom retry loops (all languages):**
+
+      A `while True:` / `while (true)` / `for {}` block that contains a `try/except` (or `try/catch`) with a `continue` or a re-invocation of the same call is a manual retry loop. Apply the same rule as Loop Safety: a bounded counter must be present.
+
+      | Pattern to find | Pass condition | Fail condition |
+      |-----------------|----------------|----------------|
+      | Loop + `try/except` + `continue` | An integer counter is declared before the loop and incremented inside it, with a conditional check against a max | No counter present → ❌ Issue |
 
    7. **`[PATTERN]` Tool Registry Consistency**
 
