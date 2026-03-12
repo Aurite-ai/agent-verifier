@@ -245,10 +245,37 @@ If the project appears to be an AI agent (LangGraph, CrewAI, AutoGen, LangChain,
 **Analysis Steps:**
 
 1. **Build tool registry**
-   - Scan tool definition files (`tools.py`, `tools.ts`, `tools/*.py`)
-   - Extract tool names from decorators (`@tool`, `@function_tool`)
-   - Extract from schema definitions (`name: "tool_name"`)
-   - Note tool count and complexity
+
+   Scan all tool definition files: `tools.py`, `tools.ts`, `tools/*.py`, `tools/*.ts`, and any file whose name or content suggests it defines agent tools. Extract tool names using the patterns below. A name found by **any** pattern counts as a registered tool.
+
+   **Python — decorator patterns:**
+
+   | Pattern | How to extract name |
+   |---------|---------------------|
+   | `@tool` (LangChain) on a `def` | Function name immediately below the decorator |
+   | `@function_tool` (OpenAI Agents SDK) on a `def` | Function name immediately below the decorator |
+   | `@tool(name="...")` with explicit name arg | Use the `name=` argument value, not the function name |
+
+   **Python — dict/list patterns:**
+
+   | Pattern | How to extract name |
+   |---------|---------------------|
+   | `{"type": "function", "function": {"name": "..."}}` (OpenAI function calling) | Value of the `"name"` key inside `"function"` |
+   | `{"name": "...", "input_schema": {...}}` (Anthropic tool use) | Value of the top-level `"name"` key |
+   | `{"name": "...", "description": "...", "parameters": {...}}` (generic schema) | Value of the top-level `"name"` key |
+   | `ToolNode([func1, func2, ...])` (LangGraph) | Each function name in the list — these must already be registered via decorator or schema above |
+   | `tools = [func1, func2]` / `TOOLS = [...]` list assigned to a variable | Each identifier in the list — resolve to function names already found by other patterns |
+
+   **TypeScript/JavaScript — patterns:**
+
+   | Pattern | How to extract name |
+   |---------|---------------------|
+   | `{ type: "function", function: { name: "..." } }` (OpenAI) | Value of `name:` inside `function:` |
+   | `tool({ description: "...", parameters: z.object({...}) })` assigned to a `const name =` (Vercel AI SDK) | The `const` variable name |
+   | `new DynamicTool({ name: "...", ... })` (LangChain.js) | Value of `name:` |
+   | `zodFunction({ name: "...", ... })` | Value of `name:` |
+
+   After collecting all names, note the total count and source format for the report.
 
 2. **Analyze agent loops**
    - Find main execution loops
