@@ -16,31 +16,43 @@ tests/fixtures/
 
 ## How to Test
 
-### Option 1: Test Individual Fixture Categories
+### Option 1: Full Verification Suite
 
-Ask your coding agent to verify a specific fixture directory:
-
-```
-cd tests/fixtures/infinite_loop
-```
-
-Then say to the agent:
-> "Verify this code for agent loop safety patterns"
-
-### Option 2: Test All Fixtures
-
-From the project root:
+From any fixture directory:
 ```
 cd tests/fixtures
 ```
 
 Then say to the agent:
-> "Run verification on these test fixtures and generate a report"
+> "verify agent"
 
-### Option 3: Use the Skill Trigger Phrases
+This runs all checks: security, patterns, quality, and language-specific.
 
-Any of these will work:
-- "verify my code"
+### Option 2: Focused Pattern Checks
+
+For testing specific categories:
+
+| Command | What it tests |
+|---------|---------------|
+| `"verify agent patterns"` | Loop safety, retry limits, tool registry, context size |
+| `"verify agent security"` | Secrets, input validation, error exposure |
+| `"verify agent quality"` | Naming, organization, documentation |
+| `"verify agent language"` | Python/TypeScript/Go specific checks |
+
+### Option 3: Test Individual Fixture Categories
+
+```
+cd tests/fixtures/infinite_loop
+```
+
+Then say:
+> "verify agent patterns"
+
+This runs only the pattern checks (loop safety, retry limits, etc.) on that directory.
+
+### Legacy Trigger Phrases
+
+These still work and trigger the full verification suite:
 - "audit this agent code"
 - "check compliance"
 - "validate against best practices"
