@@ -1,6 +1,45 @@
 # Aurite Agent Verifier
 
-A coding agent skill that verifies code against organizational policies, security requirements, and framework best practices.
+A coding agent skill that verifies code against organizational policies, security requirements, and framework best practices. Built for developers and platform teams who want AI agents to catch security issues, enforce coding standards, and validate agent-specific patterns before code ships. Works with Claude Code, Roo Code, Cursor, Windsurf, and any agent that supports the [Agent Skills spec](https://agentskills.io/).
+
+Built by [Aurite AI](https://aurite.ai). Interested in enterprise capabilities - secure agents infra, shared context pools, administrative controls, and centralized hosting? Visit www.aurite.ai or reach out at info@aurite.ai.
+
+**Contributions welcome!** Found a bug or want to add a check? [Open a PR](https://github.com/aurite-ai/agent-verifier/pulls).
+
+**Questions or issues?** [Open an issue](https://github.com/aurite-ai/agent-verifier/issues) — we're happy to help.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      verification                           │
+│                 Full Suite Orchestrator                     │
+│                 trigger: "verify agent"                     │
+└───────────┬───────────┬───────────┬───────────┬─────────────┘
+            │           │           │           │
+            ▼           ▼           ▼           ▼
+    ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐
+    │  verify-  │ │  verify-  │ │  verify-  │ │  verify-  │
+    │ security  │ │ patterns  │ │  quality  │ │ language  │
+    ├───────────┤ ├───────────┤ ├───────────┤ ├───────────┤
+    │ • secrets │ │ • loops   │ │ • naming  │ │ • Python  │
+    │ • deps    │ │ • retries │ │ • docs    │ │ • TypeScript│
+    │ • input   │ │ • tools   │ │ • errors  │ │ • Go      │
+    │ • errors  │ │ • context │ │ • magic   │ │           │
+    └───────────┘ └───────────┘ └───────────┘ └───────────┘
+
+Each skill can run independently: "verify agent security", "verify agent patterns", etc.
+```
+
+## Available Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `verification` | Full verification suite (orchestrator) — runs all checks below |
+| `verify-security` | Security checks (secrets, input validation, dependencies) |
+| `verify-patterns` | Agent patterns (loops, retries, tools, context) |
+| `verify-quality` | Code quality (naming, organization, docs) |
+| `verify-language` | Language-specific checks (Python, TypeScript, Go) |
 
 ## Installation
 
@@ -9,11 +48,18 @@ Install using the [skills CLI](https://github.com/vercel-labs/skills):
 ### From NPM Registry (Recommended)
 
 ```bash
-# Install to all detected agents (Claude Code, Roo Code, Cursor, etc.)
-npx skills add aurite-ai/agent-verifier
+# List available skills in this package
+npx skills add aurite-ai/agent-verifier --list
 
-# Install to specific agents
+# Install to specific agents (multi select allowed)
 npx skills add aurite-ai/agent-verifier -a claude-code -a roo
+
+# Install all skills to all detected agents (Claude Code, Roo Code, Cursor, etc.)
+npx skills add aurite-ai/agent-verifier --all
+
+# Install specific skills only
+npx skills add aurite-ai/agent-verifier --skill verification verify-security
+
 
 # Install globally (available in all projects)
 npx skills add aurite-ai/agent-verifier -g
@@ -24,17 +70,26 @@ npx skills add aurite-ai/agent-verifier -g
 Install directly from a GitHub repo (public or private with access):
 
 ```bash
-# From public GitHub repo
-npx skills add github:aurite-ai/agent-verifier
+# List available skills
+npx skills add github:aurite-ai/agent-verifier --list
+
+# Install to specific agents (multi select allowed)
+npx skills add github:aurite-ai/agent-verifier -a claude-code -a roo
+
+# Install all skills from public GitHub repo
+npx skills add github:aurite-ai/agent-verifier --all
+
+# Install specific skills only
+npx skills add github:aurite-ai/agent-verifier --skill verification verify-security
 
 # From a specific branch
-npx skills add github:aurite-ai/agent-verifier#main
+npx skills add github:aurite-ai/agent-verifier#main --all
 
 # From a specific tag/release
-npx skills add github:aurite-ai/agent-verifier#v1.0.0
+npx skills add github:aurite-ai/agent-verifier#v1.0.0 --all
 
 # From private repo (requires GitHub authentication)
-npx skills add github:your-org/your-private-skill
+npx skills add github:your-org/your-private-skill --all
 ```
 
 ### From Local Source
@@ -42,12 +97,17 @@ npx skills add github:your-org/your-private-skill
 Install from a local directory during development:
 
 ```bash
-# Install from local path (relative or absolute)
-npx skills add ./path/to/agent-verifier
+# List available skills in local repo
+npx skills add ./path/to/agent-verifier --list
 
-# Install from current directory
-cd agent-verifier
-npx skills add .
+# Install to specific agents (multi select allowed)
+npx skills add ./path/to/agent-verifier -a claude-code -a roo
+
+# Install all skills from local path
+npx skills add ./path/to/agent-verifier --all
+
+# Install specific skills only
+npx skills add ./path/to/agent-verifier --skill verification verify-patterns
 
 # Install with link (for development - changes reflect immediately)
 npx skills link .
@@ -58,11 +118,11 @@ npx skills link .
 For agents that don't support the skills CLI, copy the skill files directly:
 
 ```bash
-# For Roo Code
-cp -r skills/verification ~/.roo/skills/
+# For Roo Code (copy all skills)
+cp -r skills/* ~/.roo/skills/
 
-# For Claude Code
-cp -r skills/verification ~/.claude/skills/
+# For Claude Code (copy all skills)
+cp -r skills/* ~/.claude/skills/
 
 # For other agents, check their documentation for the skills directory location
 ```
@@ -74,8 +134,15 @@ cp -r skills/verification ~/.claude/skills/
 Re-run the install command to get the latest published version:
 
 ```bash
-# Update to latest version
+
+# Install to specific agents (multi select allowed)
 npx skills add aurite-ai/agent-verifier -a claude-code
+
+# Update all skills to latest version
+npx skills add aurite-ai/agent-verifier --all
+
+# Update specific skills only
+npx skills add aurite-ai/agent-verifier --skill verification verify-security -a claude-code
 
 # Or specify a version
 npx skills add aurite-ai/agent-verifier@1.2.0 -a claude-code
@@ -86,11 +153,11 @@ npx skills add aurite-ai/agent-verifier@1.2.0 -a claude-code
 Re-run with the same source to pull latest changes:
 
 ```bash
-# Update from default branch
-npx skills add github:aurite-ai/agent-verifier -a claude-code
+# Update all skills from default branch
+npx skills add github:aurite-ai/agent-verifier --all -a claude-code
 
 # Update from specific branch
-npx skills add github:aurite-ai/agent-verifier#main -a claude-code
+npx skills add github:aurite-ai/agent-verifier#main --all -a claude-code
 
 # Update to specific tag/release
 npx skills add github:aurite-ai/agent-verifier#v1.2.0 -a claude-code
@@ -124,7 +191,7 @@ npx skills add /path/to/agent-verifier -a claude-code --force
 ### Remove and Reinstall
 
 ```bash
-# Remove the skill
+# Remove each skill by skill name
 npx skills remove verification
 
 # Reinstall from any source
@@ -140,9 +207,30 @@ cp -r /path/to/agent-verifier/skills/verification ~/.claude/skills/
 
 ## Usage
 
-Once installed, trigger the skill by asking your coding agent to:
+Once installed, trigger verification by asking your coding agent:
 
-- "verify my code"
+### Full Verification Suite
+
+```
+"verify agent"
+```
+
+This runs the complete verification suite covering security, agent patterns, code quality, and language-specific checks. Use this for comprehensive audits or pre-release reviews.
+
+### Focused Verification
+
+For faster, targeted checks, use domain-specific invocations:
+
+| Command | What it checks |
+|---------|----------------|
+| `"verify agent security"` | Secrets, input validation, error exposure, dependency vulnerabilities |
+| `"verify agent patterns"` | Loop safety, retry limits, tool registry, context size, LangGraph cycles |
+| `"verify agent quality"` | Naming, organization, documentation, magic values, error handling |
+| `"verify agent language"` | Python type hints, TypeScript strict mode, Go error handling |
+
+### Legacy Triggers (Still Supported)
+
+These phrases also trigger the full verification suite:
 - "review this implementation"
 - "check compliance"
 - "audit my agent"
