@@ -1,6 +1,6 @@
 # Aurite Agent Verifier
 
-A coding agent skill that verifies code against organizational policies, security requirements, and framework best practices. Built for developers and platform teams who want AI agents to catch security issues, enforce coding standards, and validate agent-specific patterns before code ships. Works with Claude Code, Roo Code, Cursor, Windsurf, and any agent that supports the [Agent Skills spec](https://agentskills.io/).
+A coding agent skill that verifies code against organizational policies, security requirements, and framework best practices. Built for developers and platform teams who want AI agents to catch security issues, enforce coding standards, and validate agent-specific patterns before code ships. Works with Claude Code, Roo Code, Cursor, Windsurf, and many other agent frameworks.
 
 Built by [Aurite AI](https://aurite.ai). Interested in enterprise capabilities - secure agents infra, shared context pools, administrative controls, and centralized hosting? Visit www.aurite.ai or reach out at info@aurite.ai.
 
