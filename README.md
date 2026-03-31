@@ -2,11 +2,24 @@
 
 A coding agent skill that verifies code against organizational policies, security requirements, and framework best practices. Built for developers and platform teams who want AI agents to catch security issues, enforce coding standards, and validate agent-specific patterns before code ships. Works with Claude Code, Roo Code, Cursor, Windsurf, and many other agent frameworks.
 
-Built by [Aurite AI](https://aurite.ai). Interested in enterprise capabilities - secure agents infra, shared context pools, administrative controls, and centralized hosting? Visit www.aurite.ai or reach out at info@aurite.ai.
+Built by [Aurite AI](https://aurite.ai). Interested in enterprise capabilities - secure agents infra, shared context pools, administrative controls, and centralized hosting? Visit www.aurite.ai or reach out at info@aurite.ai.
 
 **Contributions welcome!** Found a bug or want to add a check? [Open a PR](https://github.com/aurite-ai/agent-verifier/pulls).
 
 **Questions or issues?** [Open an issue](https://github.com/aurite-ai/agent-verifier/issues) — we're happy to help.
+
+## Documentation
+
+New to Agent Verifier? Start here:
+
+- **[Getting Started](docs/getting-started.md)** — Install and run your first verification in 5 minutes
+- **[Tutorials](docs/tutorials/)** — Step-by-step guides:
+  - [Installation](docs/tutorials/01-installation.md) — Detailed installation options
+  - [First Verification](docs/tutorials/02-first-verification.md) — Run your first verification
+  - [Understanding Reports](docs/tutorials/03-understanding-reports.md) — Interpret and prioritize findings
+  - [Focused Checks](docs/tutorials/04-focused-checks.md) — Use individual verification skills
+
+The rest of this README serves as a technical reference.
 
 ## Architecture
 
