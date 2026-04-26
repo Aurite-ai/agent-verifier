@@ -1,16 +1,141 @@
-# Aurite Agent Verifier
+<div align="center">
 
-A coding agent skill that verifies code against organizational policies, security requirements, and framework best practices. Built for developers and platform teams who want AI agents to catch security issues, enforce coding standards, and validate agent-specific patterns before code ships. Works with Claude Code, Roo Code, Cursor, Windsurf, and many other agent frameworks.
+# 🔍 Aurite Agent Verifier
 
-Built by [Aurite AI](https://aurite.ai). Interested in enterprise capabilities - secure agents infra, shared context pools, administrative controls, and centralized hosting? Visit www.aurite.ai or reach out at info@aurite.ai.
+**Catch security issues, enforce standards, and validate agent patterns — before code ships.**
 
-**Contributions welcome!** Found a bug or want to add a check? [Open a PR](https://github.com/aurite-ai/agent-verifier/pulls).
+[![GitHub stars](https://img.shields.io/github/stars/aurite-ai/agent-verifier?style=social)](https://github.com/aurite-ai/agent-verifier/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/aurite-ai/agent-verifier/pulls)
+[![Last commit](https://img.shields.io/github/last-commit/aurite-ai/agent-verifier)](https://github.com/aurite-ai/agent-verifier/commits)
 
-**Questions or issues?** [Open an issue](https://github.com/aurite-ai/agent-verifier/issues) — we're happy to help.
+Works with **Claude Code** · **Cursor** · **Windsurf** · **Roo Code** · **Codex** · [30+ more](https://github.com/vercel-labs/skills#supported-agents)
 
-## Documentation
+</div>
 
-New to Agent Verifier? Start here:
+---
+
+## Why?
+
+AI coding agents are powerful — but they skip linting, ignore security basics, and hallucinate tool calls. Code reviews catch some of this, but not consistently.
+
+Agent Verifier is an AI agent skill that acts as an automated reviewer. It checks for:
+- 🔒 **Security gaps** — hardcoded secrets, missing input validation, exposed stack traces
+- 🔄 **Dangerous agent patterns** — infinite loops, unbounded retries, hallucinated tools
+- 📏 **Code quality** — naming, docs, error handling, magic values
+- 🐍🟦🐹 **Language-specific issues** — Python type hints, TypeScript strict mode, Go error handling
+
+Install it once. It runs every time you say `"verify agent"`.
+
+---
+
+## What You Get
+
+Run `"verify agent"` and get a structured report:
+
+```
+✅ 8 checks passed | ⚠️ 3 warnings | ❌ 2 issues
+
+❌ Hardcoded API key at config.py:12
+  → Move to environment variable
+
+❌ Hallucinated tool reference: execute_sql
+  → Tool referenced in prompts but not defined
+
+⚠️ Unbounded loop at agent/loop.py:45
+  → Add MAX_ITERATIONS constant
+
+⚠️ System prompt exceeds recommended size (6.2K tokens)
+  → Split into modular sections
+```
+
+> All analysis runs locally. Your code never leaves your machine.
+
+<details>
+<summary>See full report format</summary>
+
+```markdown
+# Verification Report
+
+**Project:** my-project
+**Date:** 2026-03-04
+**Mode:** Standalone
+**Files analyzed:** 12
+**Agent type detected:** LangGraph
+
+## Summary
+
+✅ 8 checks passed | ⚠️ 3 warnings | ❌ 2 issues
+
+### By Category
+| Category | Pass | Warn | Issue |
+|----------|------|------|-------|
+| Code Quality | 5 | 1 | 0 |
+| Security | 2 | 0 | 1 |
+| Agent Patterns | 1 | 2 | 1 |
+
+## Agent Pattern Analysis
+
+### Loop Safety
+- [x] All retry mechanisms have explicit limits
+- [ ] ⚠️ Potential unbounded loop at `agent/loop.py:45`
+
+### Tool Consistency
+- [x] Tool registry found: 5 tools defined
+- [ ] ❌ 1 hallucinated tool reference in prompts
+
+### Context Management
+- [ ] ⚠️ System prompt exceeds recommended size (6.2K tokens)
+- [x] Tool descriptions within limits
+
+## Findings
+
+### ✅ Passing
+- Naming conventions: Consistent camelCase used throughout
+- Error handling: All async functions have try/catch
+
+### ⚠️ Warnings
+- Missing type hints: `utils.py:45`
+  - **Location:** `utils.py:45`
+  - **Suggestion:** Add type hints to `process_data()` function
+
+### ❌ Issues
+- Hardcoded API key: `config.py:12`
+  - **Location:** `config.py:12`
+  - **Rule:** No secrets in source code
+  - **Fix:** Move to environment variable
+
+## Recommendations
+
+1. Move API keys to environment variables
+2. Add type hints to public functions
+
+## Agent-Specific Recommendations
+
+1. **Loop Safety:** Add `MAX_ITERATIONS` constant to `agent/loop.py`
+2. **Tool Registry:** Remove or implement `execute_sql` tool
+3. **Context Management:** Split system prompt into modular sections
+```
+
+</details>
+
+---
+
+## Quickstart
+
+```bash
+# Install (works with Claude Code, Roo Code, Cursor, and 30+ agents)
+npx skills add aurite-ai/agent-verifier -a claude-code -a cursor -a <your-fav-coding-agent>
+
+# Then just ask your agent:
+# "verify agent"
+```
+
+That's it. For more installation options, see [Installation](#installation).
+
+### Learn More
+
+New to Agent Verifier? These guides walk you through everything:
 
 - **[Getting Started](docs/getting-started.md)** — Install and run your first verification in 5 minutes
 - **[Tutorials](docs/tutorials/)** — Step-by-step guides:
@@ -20,6 +145,38 @@ New to Agent Verifier? Start here:
   - [Focused Checks](docs/tutorials/04-focused-checks.md) — Use individual verification skills
 
 The rest of this README serves as a technical reference.
+
+---
+
+> 💡 **If Agent Verifier catches something useful for you, consider [giving it a ⭐](https://github.com/aurite-ai/agent-verifier/stargazers).** It helps others discover the project.
+
+## Contributions
+
+We welcome contributions of all kinds! Here's how you can help:
+
+- 🐛 **Found a bug?** [Open an issue](https://github.com/aurite-ai/agent-verifier/issues)
+- 💡 **Want a new check?** [Open a feature request](https://github.com/aurite-ai/agent-verifier/issues/new)
+- 🔧 **Want to contribute code?** [Open a PR](https://github.com/aurite-ai/agent-verifier/pulls)
+
+---
+
+## Table of Contents
+
+- [Why?](#why)
+- [What You Get](#what-you-get)
+- [Quickstart](#quickstart)
+- [Architecture](#architecture)
+- [Available Skills](#available-skills)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Features](#features)
+- [How It Compares](#how-it-compares)
+- [Check Reliability](#check-reliability)
+- [Privacy](#privacy)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
 
 ## Architecture
 
@@ -56,9 +213,15 @@ Each skill can run independently: "verify agent security", "verify agent pattern
 
 ## Installation
 
-Install using the [skills CLI](https://github.com/vercel-labs/skills):
+### Recommended
 
-### From NPM Registry (Recommended)
+```bash
+# Install all skills to all detected agents (Claude Code, Roo Code, Cursor, etc.)
+npx skills add aurite-ai/agent-verifier -a claude-code -a <your-fav-coding-agent>
+```
+
+<details>
+<summary>More install options (specific agents, skills, or version)</summary>
 
 ```bash
 # List available skills in this package
@@ -67,18 +230,17 @@ npx skills add aurite-ai/agent-verifier --list
 # Install to specific agents (multi select allowed)
 npx skills add aurite-ai/agent-verifier -a claude-code -a roo
 
-# Install all skills to all detected agents (Claude Code, Roo Code, Cursor, etc.)
-npx skills add aurite-ai/agent-verifier --all
-
 # Install specific skills only
 npx skills add aurite-ai/agent-verifier --skill verification verify-security
-
 
 # Install globally (available in all projects)
 npx skills add aurite-ai/agent-verifier -g
 ```
 
-### From GitHub Repository
+</details>
+
+<details>
+<summary>Install from GitHub repository</summary>
 
 Install directly from a GitHub repo (public or private with access):
 
@@ -105,7 +267,10 @@ npx skills add github:aurite-ai/agent-verifier#v1.0.0 --all
 npx skills add github:your-org/your-private-skill --all
 ```
 
-### From Local Source
+</details>
+
+<details>
+<summary>Install from local source</summary>
 
 Install from a local directory during development:
 
@@ -126,7 +291,10 @@ npx skills add ./path/to/agent-verifier --skill verification verify-patterns
 npx skills link .
 ```
 
-### Manual Installation
+</details>
+
+<details>
+<summary>Manual installation</summary>
 
 For agents that don't support the skills CLI, copy the skill files directly:
 
@@ -140,6 +308,8 @@ cp -r skills/* ~/.claude/skills/
 # For other agents, check their documentation for the skills directory location
 ```
 
+</details>
+
 ## Updating Installed Skills
 
 ### From NPM Registry
@@ -147,12 +317,16 @@ cp -r skills/* ~/.claude/skills/
 Re-run the install command to get the latest published version:
 
 ```bash
-
-# Install to specific agents (multi select allowed)
-npx skills add aurite-ai/agent-verifier -a claude-code
-
 # Update all skills to latest version
 npx skills add aurite-ai/agent-verifier --all
+```
+
+<details>
+<summary>More update options</summary>
+
+```bash
+# Install to specific agents (multi select allowed)
+npx skills add aurite-ai/agent-verifier -a claude-code
 
 # Update specific skills only
 npx skills add aurite-ai/agent-verifier --skill verification verify-security -a claude-code
@@ -161,7 +335,10 @@ npx skills add aurite-ai/agent-verifier --skill verification verify-security -a 
 npx skills add aurite-ai/agent-verifier@1.2.0 -a claude-code
 ```
 
-### From GitHub Repository
+</details>
+
+<details>
+<summary>Update from GitHub repository</summary>
 
 Re-run with the same source to pull latest changes:
 
@@ -176,9 +353,12 @@ npx skills add github:aurite-ai/agent-verifier#main --all -a claude-code
 npx skills add github:aurite-ai/agent-verifier#v1.2.0 -a claude-code
 ```
 
-### From Local Source (Symlink)
+</details>
 
-If installed with symlink, changes reflect automatically. No action needed.
+<details>
+<summary>Update from local source or manual update</summary>
+
+**Symlink install:** If installed with `npx skills link .`, changes reflect automatically. No action needed.
 
 Check if you're using symlink:
 ```bash
@@ -189,10 +369,7 @@ cat skills-lock.json  # Look for "method": "symlink"
 ls -la .agents/skills/verification  # Should show -> pointing to source
 ```
 
-### From Local Source (Copy)
-
-Re-run the install command to update:
-
+**Copy install:** Re-run the install command to update:
 ```bash
 # Reinstall from source
 npx skills add /path/to/agent-verifier -a claude-code
@@ -201,8 +378,7 @@ npx skills add /path/to/agent-verifier -a claude-code
 npx skills add /path/to/agent-verifier -a claude-code --force
 ```
 
-### Remove and Reinstall
-
+**Remove and reinstall:**
 ```bash
 # Remove each skill by skill name
 npx skills remove verification
@@ -211,12 +387,13 @@ npx skills remove verification
 npx skills add aurite-ai/agent-verifier -a claude-code
 ```
 
-### Manual Update
-
+**Manual update:**
 ```bash
 # Copy updated files directly
 cp -r /path/to/agent-verifier/skills/verification ~/.claude/skills/
 ```
+
+</details>
 
 ## Usage
 
@@ -354,7 +531,8 @@ Automatically detects and applies framework-specific checks:
 | LangChain | `langchain` in imports | Chain composition, memory config |
 | Custom | Direct SDK usage | General agent patterns |
 
-## Testing the Skill
+<details>
+<summary>Testing the Skill</summary>
 
 Test fixtures are provided in `tests/fixtures/` to validate the agent pattern detection:
 
@@ -370,84 +548,21 @@ cd tests/fixtures
 
 See [`tests/fixtures/README.md`](tests/fixtures/README.md) for expected results.
 
-## Report Format
+</details>
 
-The skill generates a structured markdown report with agent-specific analysis:
+## How It Compares
 
-```markdown
-# Verification Report
+| | Agent Verifier | ESLint/Biome | Semgrep | Manual Review |
+|---|---|---|---|---|
+| AI agent patterns (loops, retries, tools) | ✅ | ❌ | ❌ | Sometimes |
+| Security checks | ✅ | Partial | ✅ | Sometimes |
+| Language-specific quality | ✅ | ✅ | ✅ | ✅ |
+| Works inside your AI agent | ✅ | ❌ | ❌ | ❌ |
+| Zero config | ✅ | ❌ | ❌ | N/A |
+| Context-size analysis | ✅ | ❌ | ❌ | Rarely |
+| Runs locally / private | ✅ | ✅ | ✅ | ✅ |
 
-**Project:** my-project
-**Date:** 2026-03-04
-**Mode:** Standalone
-**Files analyzed:** 12
-**Agent type detected:** LangGraph
-
-## Summary
-
-✅ 8 checks passed | ⚠️ 3 warnings | ❌ 2 issues
-
-### By Category
-| Category | Pass | Warn | Issue |
-|----------|------|------|-------|
-| Code Quality | 5 | 1 | 0 |
-| Security | 2 | 0 | 1 |
-| Agent Patterns | 1 | 2 | 1 |
-
-## Agent Pattern Analysis
-
-### Loop Safety
-- [x] All retry mechanisms have explicit limits
-- [ ] ⚠️ Potential unbounded loop at `agent/loop.py:45`
-
-### Tool Consistency
-- [x] Tool registry found: 5 tools defined
-- [ ] ❌ 1 hallucinated tool reference in prompts
-
-### Context Management
-- [ ] ⚠️ System prompt exceeds recommended size (6.2K tokens)
-- [x] Tool descriptions within limits
-
-## Findings
-
-### ✅ Passing
-- Naming conventions: Consistent camelCase used throughout
-- Error handling: All async functions have try/catch
-
-### ⚠️ Warnings
-- Missing type hints: `utils.py:45`
-  - **Location:** `utils.py:45`
-  - **Suggestion:** Add type hints to `process_data()` function
-
-### ❌ Issues
-- Hardcoded API key: `config.py:12`
-  - **Location:** `config.py:12`
-  - **Rule:** No secrets in source code
-  - **Fix:** Move to environment variable
-
-## Recommendations
-
-1. Move API keys to environment variables
-2. Add type hints to public functions
-
-## Agent-Specific Recommendations
-
-1. **Loop Safety:** Add `MAX_ITERATIONS` constant to `agent/loop.py`
-2. **Tool Registry:** Remove or implement `execute_sql` tool
-3. **Context Management:** Split system prompt into modular sections
-```
-
-## Supported Agents
-
-This skill works with any agent supported by the [skills CLI](https://github.com/vercel-labs/skills), including:
-
-- Claude Code
-- Roo Code  
-- Cursor
-- Codex
-- OpenCode
-- Windsurf
-- And [30+ more](https://github.com/vercel-labs/skills#supported-agents)
+Agent Verifier is not a replacement for linters — it catches what they cannot: agent-specific patterns, context management issues, and tool hallucinations.
 
 ## Check Reliability
 
@@ -486,12 +601,21 @@ Because Agent Verifier runs as an AI agent skill rather than a deterministic par
 
 All code analysis happens locally. Your code never leaves your machine.
 
-## Related Skills
+## Contributing
 
-- Coming soon: `aurite-ai/agent-documenter` - Documentation search
-- Coming soon: `aurite-ai/agent-architect` - Architecture planning
-- Coming soon: `aurite-ai/agent-implementer` - Plan execution
+We welcome contributions of all kinds! Here's how you can help:
+
+- 🐛 **Found a bug?** [Open an issue](https://github.com/aurite-ai/agent-verifier/issues)
+- 💡 **Want a new check?** [Open a feature request](https://github.com/aurite-ai/agent-verifier/issues/new)
+- 🔧 **Want to contribute code?** [Open a PR](https://github.com/aurite-ai/agent-verifier/pulls)
+
+
+---
+
+## Built by Aurite AI
+
+Built by [Aurite AI](https://aurite.ai). Interested in enterprise capabilities — secure agent infrastructure, shared context pools, administrative controls, and centralized hosting? Visit [aurite.ai](https://aurite.ai) or reach out at info@aurite.ai.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE)
+MIT License — see [LICENSE](LICENSE)
