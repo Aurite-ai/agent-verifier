@@ -11,6 +11,8 @@
 
 Works with **Claude Code** · **Cursor** · **Windsurf** · **Roo Code** · **Codex** · [30+ more](https://github.com/vercel-labs/skills#supported-agents)
 
+![demo](assets/agent_verifier.gif)
+
 </div>
 
 ---
