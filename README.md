@@ -31,6 +31,12 @@ Install it once. It runs every time you say `"verify agent"`.
 
 ---
 
+### Author Note
+
+> 💡 **If Agent Verifier looks interesting to you — or saves you a prod bug — consider [giving it a ⭐](https://github.com/aurite-ai/agent-verifier/stargazers).** It's the only signal GitHub gives us that this is worth maintaining and adding more capabilities to this.
+
+> 🤝 **Contributions and feature requests welcome** — open an [issue](https://github.com/aurite-ai/agent-verifier/issues) or [PR](https://github.com/aurite-ai/agent-verifier/pulls) any time.
+
 ## What You Get
 
 Run `"verify agent"` and get a structured report:
@@ -149,8 +155,6 @@ New to Agent Verifier? These guides walk you through everything:
 The rest of this README serves as a technical reference.
 
 ---
-
-> 💡 **If Agent Verifier catches something useful for you, consider [giving it a ⭐](https://github.com/aurite-ai/agent-verifier/stargazers).** It helps others discover the project.
 
 ## Contributions
 
