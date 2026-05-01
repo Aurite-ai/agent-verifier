@@ -31,15 +31,15 @@ Install it once. It runs every time you say `"verify agent"`.
 
 ---
 
-### Author Note
+## Author's Note
 
-> 💡 **If Agent Verifier looks interesting to you — or saves you a prod bug — consider [giving it a ⭐](https://github.com/aurite-ai/agent-verifier/stargazers).** It's the only signal GitHub gives us that this is worth maintaining and adding more capabilities to this.
+> 💡 **If Agent Verifier looks interesting to you — or saves you a prod bug — consider [giving it a ⭐](https://github.com/aurite-ai/agent-verifier/stargazers).** It's the only signal GitHub gives us that this is worth maintaining and adding more capabilities to this repo.
 
 > 🤝 **Contributions and feature requests welcome** — open an [issue](https://github.com/aurite-ai/agent-verifier/issues) or [PR](https://github.com/aurite-ai/agent-verifier/pulls) any time.
 
 ## What You Get
 
-Run `"verify agent"` and get a structured report:
+Run `"verify agent"` in your coding assistant (eg. Claude Code, Cursor or others) and get a structured report:
 
 ```
 ✅ 8 checks passed | ⚠️ 3 warnings | ❌ 2 issues
@@ -135,8 +135,8 @@ Run `"verify agent"` and get a structured report:
 # Install (works with Claude Code, Roo Code, Cursor, and 30+ agents)
 npx skills add aurite-ai/agent-verifier -a claude-code -a cursor -a <your-fav-coding-agent>
 
-# Then just ask your agent:
-# "verify agent"
+# Then in your agent folder just ask your coding assistant (eg. Claude Code, Cursor, or others):
+verify agent
 ```
 
 That's it. For more installation options, see [Installation](#installation).
@@ -174,6 +174,7 @@ We welcome contributions of all kinds! Here's how you can help:
 - [Architecture](#architecture)
 - [Available Skills](#available-skills)
 - [Installation](#installation)
+- [Updating Installed Skills](#updating-installed-skills)
 - [Usage](#usage)
 - [Features](#features)
 - [How It Compares](#how-it-compares)
@@ -605,7 +606,7 @@ Because Agent Verifier runs as an AI agent skill rather than a deterministic par
 
 ## Privacy
 
-All code analysis happens locally. Your code never leaves your machine.
+All code analysis happens locally. No telemetry, no external calls, no data collection. Your code never leaves your machine.
 
 ## Contributing
 
