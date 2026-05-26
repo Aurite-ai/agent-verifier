@@ -181,6 +181,7 @@ We welcome contributions of all kinds! Here's how you can help:
 - [Check Reliability](#check-reliability)
 - [Privacy](#privacy)
 - [Contributing](#contributing)
+- [Citation](#citation)
 - [License](#license)
 
 ---
@@ -616,6 +617,22 @@ We welcome contributions of all kinds! Here's how you can help:
 - 💡 **Want a new check?** [Open a feature request](https://github.com/aurite-ai/agent-verifier/issues/new)
 - 🔧 **Want to contribute code?** [Open a PR](https://github.com/aurite-ai/agent-verifier/pulls)
 
+
+---
+
+## Citation
+
+If you use Agent Verifier in your research or reference it in a paper, please cite:
+
+```bibtex
+@misc{oswal2026agent,
+  title={Agent Verifier: Catch security issues, enforce standards, and validate agent patterns — before code ships.},
+  author={Oswal, Jiten},
+  journal={Github (Open Source)},
+  url={https://github.com/Aurite-ai/agent-verifier},
+  year={2026}
+}
+```
 
 ---
 
