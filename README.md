@@ -8,6 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/aurite-ai/agent-verifier/pulls)
 [![Last commit](https://img.shields.io/github/last-commit/aurite-ai/agent-verifier)](https://github.com/aurite-ai/agent-verifier/commits)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22125316.svg)](https://doi.org/10.5281/zenodo.22125316)
 
 Works with **Claude Code** · **Cursor** · **Windsurf** · **Roo Code** · **Codex** · [30+ more](https://github.com/vercel-labs/skills#supported-agents)
 
@@ -630,7 +631,8 @@ If you use Agent Verifier in your research or reference it in a paper, please ci
   author={Oswal, Jiten},
   journal={Github (Open Source)},
   url={https://github.com/Aurite-ai/agent-verifier},
-  year={2026}
+  year={2026},
+  doi={10.5281/zenodo.22125316}
 }
 ```
 
