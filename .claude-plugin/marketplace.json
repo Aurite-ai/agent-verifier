@@ -1,0 +1,15 @@
+{
+  "name": "aurite-ai",
+  "description": "Agent tooling from Aurite AI",
+  "owner": {
+    "name": "Aurite AI",
+    "email": "info@aurite.ai"
+  },
+  "plugins": [
+    {
+      "name": "agent-verifier",
+      "source": "./",
+      "description": "Catch security issues, unsafe agent patterns, and hallucinated tools before code ships"
+    }
+  ]
+}
