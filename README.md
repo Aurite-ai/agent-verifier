@@ -140,6 +140,14 @@ npx skills add aurite-ai/agent-verifier -a claude-code -a cursor -a <your-fav-co
 verify agent
 ```
 
+### Install as a Claude Code plugin
+
+```bash
+# Add the marketplace, then install the plugin
+claude plugin marketplace add aurite-ai/agent-verifier
+claude plugin install agent-verifier@aurite-ai
+```
+
 That's it. For more installation options, see [Installation](#installation).
 
 ### Learn More

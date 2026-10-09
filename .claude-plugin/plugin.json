@@ -1,0 +1,23 @@
+{
+  "name": "agent-verifier",
+  "displayName": "Agent Verifier",
+  "version": "1.0.0",
+  "description": "Verifies AI agent code before it ships: hardcoded secrets, unbounded loops and retries, hallucinated tool references, oversized prompts, and language-specific quality checks. Runs locally.",
+  "author": {
+    "name": "Aurite AI",
+    "email": "info@aurite.ai",
+    "url": "https://aurite.ai"
+  },
+  "homepage": "https://github.com/Aurite-ai/agent-verifier",
+  "repository": "https://github.com/Aurite-ai/agent-verifier",
+  "license": "MIT",
+  "keywords": [
+    "agent-verification",
+    "code-review",
+    "security",
+    "ai-agents",
+    "langgraph",
+    "crewai",
+    "code-quality"
+  ]
+}
