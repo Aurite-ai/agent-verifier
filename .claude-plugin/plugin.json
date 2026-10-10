@@ -10,6 +10,7 @@
   },
   "homepage": "https://github.com/Aurite-ai/agent-verifier",
   "repository": "https://github.com/Aurite-ai/agent-verifier",
+  "supportUrl": "https://github.com/Aurite-ai/agent-verifier/issues",
   "license": "MIT",
   "keywords": [
     "agent-verification",
