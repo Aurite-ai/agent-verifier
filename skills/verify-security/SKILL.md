@@ -75,10 +75,9 @@ API_KEY = "sk-abc123..."
 password = "hunter2"
 OPENAI_API_KEY = "sk-proj-..."
 
-# ✅ Pass
-API_KEY = os.environ["API_KEY"]
-password = os.getenv("PASSWORD")
-api_key = settings.API_KEY
+# ✅ Pass (value loaded at runtime from env or a secrets manager, never a literal)
+api_key = settings.api_key
+password = secret_store.get("db-password")
 ```
 
 **Also flag:**
@@ -210,7 +209,7 @@ CORS(app, origins="*")
 # ✅ Pass
 requests.get(url)  # verify=True is default
 app.config["SESSION_COOKIE_SECURE"] = True
-CORS(app, origins=["https://example.com"])
+CORS(app, origins=ALLOWED_ORIGINS)  # explicit allowlist
 ```
 
 Severity: ⚠️ Warning

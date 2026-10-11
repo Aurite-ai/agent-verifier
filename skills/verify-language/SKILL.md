@@ -242,18 +242,15 @@ Check that async functions handle errors:
 ```typescript
 // ⚠️ Warning - No error handling
 async function fetchUser(id: string): Promise<User> {
-    const response = await fetch(`/users/${id}`);
-    return response.json();
+    const response = await userRepo.load(id);
+    return response;
 }
 
 // ✅ Pass - Has error handling
 async function fetchUser(id: string): Promise<User> {
     try {
-        const response = await fetch(`/users/${id}`);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        return response.json();
+        const response = await userRepo.load(id);
+        return response;
     } catch (error) {
         logger.error("Failed to fetch user", { id, error });
         throw new UserFetchError(id, error);
