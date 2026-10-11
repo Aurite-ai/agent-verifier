@@ -1,7 +1,7 @@
 {
   "name": "agent-verifier",
   "displayName": "Agent Verifier",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Verifies AI agent code before it ships: hardcoded secrets, unbounded loops and retries, hallucinated tool references, oversized prompts, and language-specific quality checks. Runs locally.",
   "author": {
     "name": "Aurite AI",
