@@ -29,7 +29,8 @@ Locate files to analyze:
 
 **Configuration files:**
 - `package.json`, `pyproject.toml`, `Cargo.toml` - Dependencies
-- `.env`, `.env.example`, `.env.local` - Environment files
+- `.env.example` - Environment template (flag values that look like real secrets)
+- `.gitignore` - Confirm `.env` and `.env.local` are ignored (if not, flag it as an issue)
 - `config.py`, `settings.py`, `config.ts` - Configuration
 
 **Source files:**
@@ -39,6 +40,7 @@ Locate files to analyze:
 **Exclude:**
 - `node_modules/`, `.venv/`, `venv/`, `__pycache__/`
 - `*.test.*`, `*.spec.*`, `*_test.go`
+- `.env`, `.env.local`, `.env.*.local` - Never open these. They hold the user's real secrets. Check only whether they are gitignored.
 
 ### Step 2: Run Security Checks
 
