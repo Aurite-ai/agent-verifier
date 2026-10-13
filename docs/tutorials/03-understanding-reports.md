@@ -128,7 +128,7 @@ Not all checks are equally reliable. Agent Verifier tags each finding with a rel
 
 These checks use mechanical pattern matching—the rule is applied exactly as specified to code structure.
 
-**Same answer every run.** If the pattern exists, it's flagged.
+**Consistent, but not guaranteed identical.** The rule is explicit, so if the pattern exists it should be flagged. An AI model still applies it, so results can occasionally vary between runs or models.
 
 **Examples of pattern-matched checks:**
 | Check | What it looks for |

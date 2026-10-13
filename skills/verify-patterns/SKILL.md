@@ -8,7 +8,7 @@ description: Verify AI agent patterns including loop safety, retry limits, tool 
 
 ## Purpose
 
-Verify AI agent code for common anti-patterns that can cause infinite loops, runaway retries, tool mismatches, and context overflow. All analysis happens locally.
+Verify AI agent code for common anti-patterns that can cause infinite loops, runaway retries, tool mismatches, and context overflow. No telemetry or network calls of its own.
 
 ## When to Use
 

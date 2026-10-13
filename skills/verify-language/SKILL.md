@@ -8,7 +8,7 @@ description: Language-specific verification for Python, TypeScript/JavaScript, a
 
 ## Purpose
 
-Verify code against language-specific best practices and idioms for Python, TypeScript/JavaScript, and Go. All analysis happens locally.
+Verify code against language-specific best practices and idioms for Python, TypeScript/JavaScript, and Go. No telemetry or network calls of its own.
 
 ## When to Use
 

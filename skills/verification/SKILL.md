@@ -8,7 +8,7 @@ description: Full agent verification suite. Runs security, patterns, quality, an
 
 ## Purpose
 
-Run comprehensive verification on AI agent code. This orchestrator invokes focused verification skills and consolidates results into a unified report. All analysis happens locally—code never leaves your machine.
+Run comprehensive verification on AI agent code. This orchestrator invokes focused verification skills and consolidates results into a unified report. No telemetry or network calls of its own; the code is processed by the host coding agent and its model provider.
 
 ## When to Use
 
@@ -260,7 +260,7 @@ Tag every finding in the report with `[P]` or `[H]` so readers understand confid
 
 ## Notes
 
-- **Privacy first:** All code analysis happens locally. Nothing is sent to external services.
+- **Privacy first:** This skill adds no telemetry and makes no network calls of its own. Do not tell users their code stays on their machine: it is processed by the host coding agent and its model provider.
 - **Kahuna enhances, not requires:** The skill works standalone with built-in rules. Kahuna adds organization-specific knowledge.
 - **Be specific:** Include file names and line numbers when reporting issues.
 - **Explain the "why":** Help developers understand why each rule matters.

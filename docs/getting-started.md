@@ -2,7 +2,7 @@
 
 Agent Verifier catches security issues, enforces coding standards, and validates AI agent patterns before your code ships. It works with Claude Code, Roo Code, Cursor, Windsurf, and [30+ other coding agents](https://github.com/vercel-labs/skills#supported-agents).
 
-All analysis happens locally—your code never leaves your machine.
+Agent Verifier adds no telemetry or network calls of its own. Your code is read by the coding agent you already use and handled under that agent's data policy.
 
 ---
 
