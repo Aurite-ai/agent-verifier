@@ -8,7 +8,7 @@ description: Verify code for security issues including hardcoded secrets, input 
 
 ## Purpose
 
-Verify code for security anti-patterns and vulnerabilities. All analysis happens locally—code never leaves your machine.
+Verify code for security anti-patterns and vulnerabilities. No telemetry or network calls of its own; the code is processed by the host coding agent and its model provider.
 
 ## When to Use
 

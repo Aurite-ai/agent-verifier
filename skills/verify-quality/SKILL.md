@@ -8,7 +8,7 @@ description: Verify code quality including naming conventions, organization, doc
 
 ## Purpose
 
-Verify code for quality anti-patterns including poor naming, missing documentation, magic values, and organizational issues. All analysis happens locally.
+Verify code for quality anti-patterns including poor naming, missing documentation, magic values, and organizational issues. No telemetry or network calls of its own.
 
 ## When to Use
 

@@ -58,7 +58,7 @@ Run `"verify agent"` in your coding assistant (eg. Claude Code, Cursor or others
   → Split into modular sections
 ```
 
-> All analysis runs locally. Your code never leaves your machine.
+> No telemetry and no network calls of its own. Your code is read by the coding agent you already use and handled under that agent's data policy.
 
 <details>
 <summary>See full report format</summary>
@@ -577,7 +577,7 @@ See [`tests/fixtures/README.md`](tests/fixtures/README.md) for expected results.
 | Works inside your AI agent | ✅ | ❌ | ❌ | ❌ |
 | Zero config | ✅ | ❌ | ❌ | N/A |
 | Context-size analysis | ✅ | ❌ | ❌ | Rarely |
-| Runs locally / private | ✅ | ✅ | ✅ | ✅ |
+| Runs locally / private | Via your agent | ✅ | ✅ | ✅ |
 
 Agent Verifier is not a replacement for linters — it catches what they cannot: agent-specific patterns, context management issues, and tool hallucinations.
 
@@ -587,7 +587,7 @@ Because Agent Verifier runs as an AI agent skill rather than a deterministic par
 
 | Tier | Tag | How it's applied | Reliability |
 |------|-----|-----------------|-------------|
-| Pattern-matched | `[P]` | Mechanical — rule applied exactly as specified to code structure | High — same answer on every run |
+| Pattern-matched | `[P]` | Mechanical — rule applied exactly as specified to code structure | High, but not guaranteed identical: an AI model applies the rule, so results can vary between runs or models |
 | Heuristic | `[H]` | Judgment — requires interpretation of intent or quality | Best-effort — may vary |
 
 **Pattern-matched checks** (reliable):
@@ -616,7 +616,9 @@ Because Agent Verifier runs as an AI agent skill rather than a deterministic par
 
 ## Privacy
 
-All code analysis happens locally. No telemetry, no external calls, no data collection. Your code never leaves your machine.
+Agent Verifier is a set of instructions for your coding agent. It adds no telemetry, makes no network calls of its own, and collects no data.
+
+It does not change where your code goes: the coding agent running it (Claude Code, Cursor, and others) reads your files and sends them to its model provider as it would for any other task. Your code is handled under that agent's data policy, so it is not guaranteed to stay on your machine.
 
 ## Contributing
 
